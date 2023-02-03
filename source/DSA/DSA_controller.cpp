@@ -7,7 +7,7 @@
 DSA_controller::DSA_controller() :
     NumberOfRobots(0),
     NumberOfSpirals(0),
-    DSA(SEARCHING),
+    DSA(RETURN_TO_NEST),
     RNG(NULL),
     ResetReturnPosition(true),
     stopTimeStep(0),
@@ -44,15 +44,15 @@ void DSA_controller::Init(TConfigurationNode& node) {
     argos::GetNodeAttribute(settings, "ProbTargetDetection",      ProbTargetDetection);
     FoodDistanceTolerance *= FoodDistanceTolerance;
 
-    //argos::CVector2 p(GetPosition());
-    //SetStartPosition(argos::CVector3(p.GetX(), p.GetY(), 0.0));
+    argos::CVector2 p(GetPosition());
+    SetStartPosition(argos::CVector3(p.GetX(), p.GetY(), 0.0));
     
     m_pcLEDs   = GetActuator<CCI_LEDsActuator>("leds");
 		m_pcLEDs->SetAllColors(CColor::GREEN);
 		controllerID= GetId();//qilu 07/26/2016
 
     RNG = CRandom::CreateRNG("argos");
-    calStartCenters(16);
+    //calStartCenters(16);
     generatePattern(NumberOfSpirals, NumberOfRobots);
     LOG<<"RobotNumber="<<RobotNumber<<endl;
     //SetStartPosition(argos::CVector3(centers[RobotNumber].GetX(), centers[RobotNumber].GetY(), 0.0));
@@ -106,7 +106,7 @@ void DSA_controller::Init(TConfigurationNode& node) {
     cout << "Finished Initializing the DDSA" << endl;
 }
 
-void DSA_controller::calStartCenters(int num_regions)
+/*void DSA_controller::calStartCenters(int num_regions)
 {
 	int num_rows = sqrt(num_regions);
 	int num_cols = num_rows;
@@ -130,12 +130,12 @@ void DSA_controller::calStartCenters(int num_regions)
 		}
 	}
 	
-	
+*/	
 void DSA_controller::generatePattern(int N_circuits, int N_robots)
 {
     string ID = GetId();
     string ID_number;
-    LOG<<"ID = "<<ID<<endl;
+    //LOG<<"ID = "<<ID<<endl;
       
     /*for(size_t i = 0; i < ID.size(); i++) {
         if(ID[i] >= '0' && ID[i] <= '9') {
@@ -193,7 +193,7 @@ void DSA_controller::generatePattern(int N_circuits, int N_robots)
 		paths.push_back(ith_robot_path);
         ith_robot_path.clear();
     }
-     LOG<<"paths="<<paths[0]<<endl;
+     //LOG<<"paths="<<paths[0]<<endl;
     //pattern = ith_robot_path;
     GetPattern(paths[RobotNumber]);
 	//return RobotNumber;
@@ -303,7 +303,7 @@ void DSA_controller::GetPattern(string ith_Pattern)
     copy(ith_Pattern.begin(),ith_Pattern.end(),back_inserter(tempPattern));
     reverse(tempPattern.begin(), tempPattern.end());
     for(int i=0; i< tempPattern.size(); i++){
-    LOG<<"tempPattern["<< i<< "]="<<tempPattern[i]<<endl;
+    //LOG<<"tempPattern["<< i<< "]="<<tempPattern[i]<<endl;
 }
 }
 
@@ -342,7 +342,7 @@ void DSA_controller::ControlStep()
   if( DSA == SEARCHING )
   {
       SetIsHeadingToNest(false);
-      argos::LOG << "SEARCHING" << std::endl;
+      //argos::LOG << "SEARCHING" << std::endl;
       SetHoldingFood();
       if (IsHoldingFood())
 	  {
@@ -354,10 +354,7 @@ void DSA_controller::ControlStep()
 	      DSA = RETURN_TO_NEST;
 	      //LOG<<"set to return ..."<<endl;
 	      //argos::LOG << "set to nest ...." << std::endl;	
-	  SetIsHeadingToNest(true);
-	  SetTarget(loopFunctions->NestPosition);
 	  //LOG<<" after setting to the nest, target location ="<<GetTarget()<<endl;
-	      Stop();
 	    }
 	    else
 	    {
@@ -375,15 +372,15 @@ void DSA_controller::ControlStep()
   } 
   else if( DSA == RETURN_TO_NEST) 
   {
-      argos::LOG << "RETURN_TO_NEST" << std::endl;
+      //argos::LOG << "RETURN_TO_NEST" << std::endl;
       SetIsHeadingToNest(true);
       //LOG<<" target location ="<<GetTarget()<<endl;
       // Check if we reached the nest. If so record that we dropped food off and go back to the spiral
       if((GetPosition() - loopFunctions->NestPosition).SquareLength() < loopFunctions->NestRadiusSquared) 
       {
-	  //DSA = RETURN_TO_SEARCH;
-	  //SetIsHeadingToNest(false);
-	  //SetTarget(ReturnPosition);
+	  DSA = RETURN_TO_SEARCH;
+	  SetIsHeadingToNest(false);
+	  SetTarget(ReturnPosition);
 
 	      if (isHoldingFood)
 	      {
@@ -391,17 +388,10 @@ void DSA_controller::ControlStep()
 	      num_targets_collected++;
 	      loopFunctions->setScore(num_targets_collected);
 	      //qilu 12/2022
-	      DSA = RETURN_TO_SEARCH;
-	      SetIsHeadingToNest(false);
-	      SetTarget(ReturnPosition);	
+	     // DSA = RETURN_TO_SEARCH;
+	      //SetIsHeadingToNest(false);
+	      //SetTarget(ReturnPosition);	
 	      }
-	      //isHoldingFood = false; qilu 12/2022
-	      else // if the robot does not hold food, it means it finished the spiral search. qilu 12/2022
-	      {
-			DSA = IDLE;
-			//SetTarget(GetPosition());
-			argos::LOG << "Set to idle ..." << std::endl;
-		  }
         isHoldingFood = false;
 	  /*
 	  ofstream results_output_stream;
@@ -413,8 +403,8 @@ void DSA_controller::ControlStep()
     else
 	{
 	 //argos::LOG << "set to nest ...." << std::endl;	
-	  //SetIsHeadingToNest(true);
-	  //SetTarget(loopFunctions->NestPosition);
+	  SetIsHeadingToNest(true);
+	  SetTarget(loopFunctions->NestPosition);
 	  //LOG<<" after setting to the nest, target location ="<<GetTarget()<<endl;
 	}
   } 
@@ -433,17 +423,13 @@ void DSA_controller::ControlStep()
       // Check if we have reached the return position
       if ( IsAtTarget() )
 		{
-	  argos::LOG << "RETURN_TO_SEARCH: Pattern Point" << std::endl;
+	  //argos::LOG << "RETURN_TO_SEARCH: Pattern Point" << std::endl;
 	  SetIsHeadingToNest(false);
 	  SetTarget(ReturnPatternPosition);
 	  DSA = SEARCHING;
 		}
   }
-  else if(DSA == IDLE)
-  {
-	// just wait for a new assignment qilu 12/2022
-	LOG<<"Becomes idle ..."<<endl;
-  } 
+   
   
   Move();
 }   
@@ -486,13 +472,6 @@ void DSA_controller::SetTargetW(char x){
 }
 
 /*****
- * Sets target to the center point of the region.
- *****/
-void DSA_controller::SetTargetO(char x){
-    CVector2 position = GetTarget();
-    SetIsHeadingToNest(false);
-    SetTarget(CVector2(centers[RobotNumber].GetX(),centers[RobotNumber].GetY()));
-}
 
 /*****
  * Helper function that reads vector <char> pattern
@@ -520,9 +499,6 @@ void DSA_controller::SetTargetO(char x){
                 break;
             case 'W':
                 SetTargetW('W');
-                break;
-            case 'O':
-                SetTargetO('O');
                 break;
 	}
 

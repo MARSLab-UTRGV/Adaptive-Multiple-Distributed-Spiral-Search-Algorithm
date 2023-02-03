@@ -46,8 +46,9 @@
       <params>
 
 	<!-- Modify TargetDistanceTolerance to Simulate Error -->
+	<!-- the "NumberOfRobots" must be the same as the "quantity" below -->
         <settings ProbTargetDetection    = "0.10"
-	          NumberOfRobots          = "1"
+	          NumberOfRobots          = "4"
                   NumberOfSpirals         = "30"
                   NestDistanceTolerance = "0.01"  
                   NestAngleTolerance = "0.05"  
@@ -72,7 +73,7 @@
                   label   = "DSA_loop_functions">
 
 <!-- FoodBoundsWidth & FoodBoundsHeight can be removed. We can compute them #qilu 12/2022 -->
-    <DDSA PrintFinalScore = "1" FoodItemCount = "128" FoodDistribution = "2" NestRadius = "0.1" />
+    <DDSA PrintFinalScore = "1" FoodItemCount = "128" FoodDistribution = "2" NestRadius = "0.2" />
 
   </loop_functions>
         
@@ -89,7 +90,7 @@
                 distances="0.2, 0.2, 0.0"
                 layout="4, 4, 1" />
       <orientation method="constant" values="0.0, 0.0, 0.0" />
-      <entity quantity="1" max_trials="100">
+      <entity quantity="4" max_trials="100"> <!-- the "quantity" must be the same as the "NumberOfRobots" above -->
         <foot-bot id="DSA_">
           <controller config="DSA"/>
         </foot-bot>

@@ -29,7 +29,7 @@ class DSA_controller : public BaseController {
         void   SetRobotPath(string path);
 		void generatePattern(int N_circuits, int N_robots);
 		int    calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
-		void calStartCenters(int num_regions); //qilu 12/2022
+		
 		void   writePatternToFile(vector<char>&, int N_robots);
 		void   addDirectionToPattern(char direction);
 		void   printPath(vector<char>&);
@@ -46,7 +46,7 @@ class DSA_controller : public BaseController {
         size_t NumberOfSpirals;
 
         /* Robot DSA state variable */
-        enum DSA { SEARCHING = 1, RETURN_TO_NEST = 2, RETURN_TO_SEARCH = 3, IDLE = 4 } DSA;
+        enum DSA { SEARCHING = 1, RETURN_TO_NEST = 2, RETURN_TO_SEARCH = 3} DSA;
 
         /* robot internal variables & statistics */
         CRandom::CRNG*      RNG;
@@ -65,7 +65,6 @@ class DSA_controller : public BaseController {
 	CVector2            previous_target;
 	CVector2            newTarget;
         CVector3            startPosition;
-        vector<CVector2>    centers; //qilu 12/2022
         vector<char>        pattern;
         vector<char>        tempPattern;
         vector<string>      rPattern;
@@ -86,7 +85,6 @@ class DSA_controller : public BaseController {
         void SetTargetS(char x);
         void SetTargetE(char x);
         void SetTargetW(char x);
-        void SetTargetO(char x);
     
         /* movement helper functions */
         void GetTargets();
