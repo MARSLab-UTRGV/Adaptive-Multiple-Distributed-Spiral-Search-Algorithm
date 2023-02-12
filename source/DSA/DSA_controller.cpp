@@ -56,7 +56,7 @@ void DSA_controller::Init(TConfigurationNode& node) {
     generatePattern(NumberOfSpirals, NumberOfRobots);
     LOG<<"RobotNumber="<<RobotNumber<<endl;
     //SetStartPosition(argos::CVector3(centers[RobotNumber].GetX(), centers[RobotNumber].GetY(), 0.0));
-    TrailColor = CColor(std::rand()%255, std::rand()%255, std::rand()%255, 255);
+    TrailColor = CColor(std::rand()%150, std::rand()%150, std::rand()%150, 255); // we avoid the white or nearly white, so we do not mode the random number by 255 
 
     // Name the results file with the current time and date
  time_t t = time(0);   // get time now
