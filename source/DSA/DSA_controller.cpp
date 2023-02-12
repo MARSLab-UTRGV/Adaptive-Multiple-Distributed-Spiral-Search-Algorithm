@@ -52,7 +52,7 @@ void DSA_controller::Init(TConfigurationNode& node) {
 		controllerID= GetId();//qilu 07/26/2016
 
     RNG = CRandom::CreateRNG("argos");
-    calStartCenters(16);
+    calRegions(4);
     generatePattern(NumberOfSpirals, NumberOfRobots);
     LOG<<"RobotNumber="<<RobotNumber<<endl;
     //SetStartPosition(argos::CVector3(centers[RobotNumber].GetX(), centers[RobotNumber].GetY(), 0.0));
@@ -106,7 +106,7 @@ void DSA_controller::Init(TConfigurationNode& node) {
     cout << "Finished Initializing the DDSA" << endl;
 }
 
-void DSA_controller::calStartCenters(int num_regions)
+void DSA_controller::calRegions(int num_regions)
 {
 	int num_rows = sqrt(num_regions);
 	int num_cols = num_rows;
@@ -119,6 +119,7 @@ void DSA_controller::calStartCenters(int num_regions)
 	double_t rangeMax = ForageRangeX.GetMax();
 	
 	CVector2 location;
+	CVector2 pos;
 	for(int i =0; i < num_rows; i++)
 	{
 		for(int j =0; j < num_cols; j++)
@@ -126,10 +127,22 @@ void DSA_controller::calStartCenters(int num_regions)
 			location = CVector2(rangeMax-(2*i+1)*unit, rangeMax-(2*j+1)*unit);
 			centers.push_back(location);
 			LOG << "center["<<i<<","<<j<<"]="<<location<<endl;
-			}
+			pos = CVector2(location.GetX()+unit, location.GetY()+unit);
+			topLeftPts.push_back(pos);
+			pos = CVector2(location.GetX()-unit, location.GetY()-unit);
+			bottomRightPts.push_back(pos);
+			
 		}
 	}
 	
+}
+	
+	
+bool DSA_controller::IsInTheNest() {
+    
+	return ((GetPosition() - loopFunctions->NestPosition).SquareLength()
+		< loopFunctions->NestRadiusSquared);
+	}
 	
 void DSA_controller::generatePattern(int N_circuits, int N_robots)
 {
@@ -303,7 +316,7 @@ void DSA_controller::GetPattern(string ith_Pattern)
     copy(ith_Pattern.begin(),ith_Pattern.end(),back_inserter(tempPattern));
     reverse(tempPattern.begin(), tempPattern.end());
     for(int i=0; i< tempPattern.size(); i++){
-    LOG<<"tempPattern["<< i<< "]="<<tempPattern[i]<<endl;
+    //LOG<<"tempPattern["<< i<< "]="<<tempPattern[i]<<endl;
 }
 }
 
@@ -356,7 +369,7 @@ void DSA_controller::ControlStep()
 	      //argos::LOG << "set to nest ...." << std::endl;	
 	  SetIsHeadingToNest(true);
 	  SetTarget(loopFunctions->NestPosition);
-	  //LOG<<" after setting to the nest, target location ="<<GetTarget()<<endl;
+	  LOG<<" after setting to the nest, target location ="<<GetTarget()<<endl;
 	      Stop();
 	    }
 	    else
@@ -369,8 +382,8 @@ void DSA_controller::ControlStep()
 	  } 
       else // not holding food
 	  {
-		 // LOG<<"not holding food and initialize target location: "<<GetTarget()<<endl;
-	    GetTargets(); /* Initializes targets positions. */
+		 LOG<<"not holding food and initialize target location: "<<GetTarget()<<endl;
+	    ReachSpiralTargets(); /* Initializes targets positions. */
 	  }
   } 
   else if( DSA == RETURN_TO_NEST) 
@@ -420,7 +433,7 @@ void DSA_controller::ControlStep()
   } 
   else if( DSA == RETURN_TO_SEARCH) 
   {
-      // argos::LOG << "RETURN_TO_SEARCH" << std::endl;
+       argos::LOG << "RETURN_TO_SEARCH" << std::endl;
       SetIsHeadingToNest(false);
       
 
@@ -499,7 +512,7 @@ void DSA_controller::SetTargetO(char x){
  * and sets the target's direction base on the 
  * char at the current vector index.
  *****/
- void DSA_controller::GetTargets(){
+ void DSA_controller::ReachSpiralTargets(){
 
    /* If the robot hit target and the patter size >0
        then find the next direction. */
@@ -547,6 +560,9 @@ void DSA_controller::SetTargetO(char x){
     if(position.SquareLength() < TargetDistanceTolerance){
         hit = true;
     }
+
+    //LOG<<"GetTarget()="<<GetTarget()<<endl;
+    //LOG<<"hit="<<hit<<endl;
     return hit;
  }
 
