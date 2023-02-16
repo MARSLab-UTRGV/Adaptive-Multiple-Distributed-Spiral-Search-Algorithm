@@ -26,7 +26,7 @@ class DSA_controller : public BaseController {
 
         bool   IsHoldingFood();
         bool   IsInTheNest(); //qilu 02/2023
-        void   GetPattern(string ith_Pattern);
+        void   GetPattern(string ith_Pattern, vector<CVector2> spiralPoints);
         void   SetRobotPath(string path);
 		void generatePattern(int N_circuits, int N_robots);
 		int    calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
@@ -67,12 +67,14 @@ class DSA_controller : public BaseController {
 	CVector2            newTarget;
         CVector3            startPosition;
         vector<CVector2>    centers; //qilu 12/2022
-        vector<CVector2>    topLeftPts; //qilu 2/2022
-        vector<CVector2>    bottomRightPts; //qilu 2/2022
+        vector<CVector2>    topLeftPts; //qilu 2/2023
+        vector<CVector2>    bottomRightPts; //qilu 2/2023
         
         vector<char>        pattern;
+        vector<CVector2>    spiral; //qilu 2/2023
         vector<char>        tempPattern;
         vector<string>      rPattern;
+        vector<CVector2>	tempSpiralPoints; //qilu 2/2023
         int                 levels;
         bool                isHoldingFood;
         bool                goingHome;
@@ -81,7 +83,8 @@ class DSA_controller : public BaseController {
         CRange<CRadians>    Tolerance;
         size_t              stopTimeStep;
         size_t              collisionDelay;
-	char direction_last;
+	    char 				direction_last;
+	    CVector2			spiral_last; //qilu 2/2023
 
         /* movement functions */
         CDegrees angleInDegrees;

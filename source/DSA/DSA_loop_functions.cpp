@@ -88,7 +88,8 @@ void DSA_loop_functions::setScore(double s)
   if (score >= FoodItemCount) 
     {
       PostExperiment();
-      exit(0);
+      exit(0); //when you debug your code, you may set the number of food to be 1 or 2. 
+               //This line will be hit and exit the simulation. You may think there is an issue in your code. qilu 2/2023 
     }
 }
 
