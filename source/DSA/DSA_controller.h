@@ -3,6 +3,7 @@
 
 #include <source/Base/BaseController.h>
 #include <source/DSA/DSA_loop_functions.h>
+#include <source/Base/Region.h>
 /* Definition of the LEDs actuator */
 #include <argos3/plugins/robots/generic/control_interface/ci_leds_actuator.h>
 
@@ -30,7 +31,6 @@ class DSA_controller : public BaseController {
         void   SetRobotPath(string path);
 		void generatePattern(int N_circuits, int N_robots);
 		int    calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
-		void calRegions(int num_regions); //qilu 12/2022
 		void   writePatternToFile(vector<char>&, int N_robots);
 		void   addDirectionToPattern(char direction);
 		void   printPath(vector<char>&);
@@ -40,8 +40,10 @@ class DSA_controller : public BaseController {
 		argos::Real SimTimeInSeconds();
 
     private:
-  string 			controllerID;
-  size_t	 RobotNumber; //qilu 12/2022
+    
+		//Region region; //qilu 02/2023
+		string 	controllerID;
+		size_t	RobotNumber; //qilu 12/2022
 
         size_t NumberOfRobots;
         size_t NumberOfSpirals;
@@ -66,9 +68,9 @@ class DSA_controller : public BaseController {
 	CVector2            previous_target;
 	CVector2            newTarget;
         CVector3            startPosition;
-        vector<CVector2>    centers; //qilu 12/2022
-        vector<CVector2>    topLeftPts; //qilu 2/2023
-        vector<CVector2>    bottomRightPts; //qilu 2/2023
+        //vector<CVector2>    centers; //qilu 12/2022
+        //vector<CVector2>    topLeftPts; //qilu 2/2023
+        //vector<CVector2>    bottomRightPts; //qilu 2/2023
         
         vector<char>        pattern;
         vector<CVector2>    spiral; //qilu 2/2023

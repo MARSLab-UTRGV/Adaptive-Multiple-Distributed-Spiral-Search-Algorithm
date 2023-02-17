@@ -73,7 +73,44 @@ CSimulator     *simulator     = &GetSimulator();
 	}
     
 	SetFoodDistribution();
+	Num_robots = footbots.size();
+	LOG<<"Num_robots="<< Num_robots <<endl;
+	calRegions(Num_robots);
 }
+
+
+void DSA_loop_functions::calRegions(int num_regions)
+{
+	int num_rows = sqrt(num_regions);
+	int num_cols = num_rows;
+	
+	double_t unit = ForageRangeX.GetMax()/num_rows;
+	double_t rangeMax = ForageRangeX.GetMax();
+	
+	CVector2 center, topLeft, bottomRight;
+	CVector2 pos;
+	for(int i =0; i < num_rows; i++)
+	{
+		for(int j =0; j < num_cols; j++)
+		{
+			center = CVector2(rangeMax-(2*i+1)*unit, rangeMax-(2*j+1)*unit);
+			centers.push_back(center);
+			LOG << "center["<<i<<","<<j<<"]="<<center<<endl;
+			topLeft = CVector2(center.GetX()+unit, center.GetY()+unit);
+			//pos = CVector2(center.GetX()+unit, center.GetY()+unit);
+			//topLeftPts.push_back(pos);
+			
+			bottomRight = CVector2(center.GetX()-unit, center.GetY()-unit);
+			//pos = CVector2(center.GetX()-unit, center.GetY()-unit);
+			//bottomRightPts.push_back(pos);
+ 
+			//Region reg(center, topLeft, bottomRight);
+			//loopFunctions->RegionList.push_back(reg);
+		}
+	}
+	
+}
+	
 
 
 double DSA_loop_functions::Score()
@@ -102,6 +139,7 @@ void DSA_loop_functions::PostExperiment()
 void DSA_loop_functions::PreStep() 
 {
     sim_time++;
+    RegionList.clear(); //qilu 02/2023
 }
 
 argos::Real DSA_loop_functions::getSimTimeInSeconds()

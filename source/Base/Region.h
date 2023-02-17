@@ -2,7 +2,8 @@
 #define IANT_REGION_H
 
 #include <argos3/core/utility/math/vector2.h>
-
+using namespace argos;
+using namespace std;
 /*****
  * Implementation of the regions for distributed robots.
  * The Region includes the center location, the boundary of the region. 
@@ -13,20 +14,24 @@ class Region {
     public:
 
         /* constructor function */
-		Region(argos::CVector2 posC, argos::CVector2 posTL, argos::CVector2 posBR);
+		Region(CVector2 posC, CVector2 posTL, CVector2 posBR);
 
         /* public helper functions */
-        argos::CVector2             GetCenter();
-        argos::CVector2 			GetTopLeft();
-		argos::Real                 GetBottomRight();
+        //CVector2            GetCenter();
+        //CVector2 			GetTopLeft();
+		//CVector2            GetBottomRight();
+		//vector<CVector2>  	GenerateSpiralPoints();
+		//vector<CVector2> 	GetSpiralPoints();
+		CVector2              center;
 		
 
 	private:
 
         /* Region position variables */
-		argos::CVector2              center;
-		argos::CVector2              topLeft;
-		argos::CVector2              bottomRight;
+		
+		//argos::CVector2              topLeft;
+		//argos::CVector2              bottomRight;
+		vector<CVector2>			 points;
 		
      
 };

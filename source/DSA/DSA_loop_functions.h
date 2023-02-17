@@ -5,7 +5,7 @@
 #include <argos3/plugins/robots/foot-bot/simulator/footbot_entity.h>
 #include <argos3/core/simulator/entity/floor_entity.h>
 #include <source/DSA/DSA_controller.h>
-
+#include <source/Base/Region.h>
 using namespace argos;
 using namespace std;
 
@@ -28,10 +28,15 @@ class DSA_loop_functions : public argos::CLoopFunctions {
 	
 
         void SetFoodDistribution();
+        
+        void calRegions(int num_regions); //qilu 12/2022
+		
 
 	argos::Real getSimTimeInSeconds();
 
 	protected:
+	
+	size_t Num_robots;
 
 	void setScore(double s);
 
@@ -69,8 +74,11 @@ class DSA_loop_functions : public argos::CLoopFunctions {
 
 	argos::Real FoodBoundsWidth;
 	argos::Real FoodBoundsHeight;
+	/* regions qilu 02/2023*/
+	std::vector<Region>   RegionList; 
 	
-        /* list variables for food & pheromones */
+	
+        /* list variables for food */
         std::vector<argos::CVector2> FoodList;
 
         std::vector<argos::CColor>   FoodColoringList;
@@ -95,6 +103,11 @@ class DSA_loop_functions : public argos::CLoopFunctions {
 
 	double score;
 	int PrintFinalScore;
+	
+	vector<CVector2>    centers; //qilu 2/2023
+        vector<CVector2>    topLeftPts; //qilu 2/2023
+        vector<CVector2>    bottomRightPts; //qilu 2/2023
+        
 };
 
 #endif /* DSA_LOOP_FUNCTIONS_H */
