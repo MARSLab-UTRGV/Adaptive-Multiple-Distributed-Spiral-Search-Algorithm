@@ -15,7 +15,6 @@ DSA_loop_functions::DSA_loop_functions() :
     DrawTrails(0),
     DrawTargetRays(0),
     FoodDistribution(1),
-//    FoodDistribution(9),
     FoodItemCount(256),
     NumberOfClusters(4),
     ClusterWidthX(8),
@@ -35,13 +34,16 @@ DSA_loop_functions::DSA_loop_functions() :
 
 void DSA_loop_functions::Init(TConfigurationNode& node) {
 CSimulator     *simulator     = &GetSimulator();
-  CPhysicsEngine *physicsEngine = &simulator->GetPhysicsEngine("default");
+  CPhysicsEngine *physicsEngine = &simulator->GetPhysicsEngine("dyn2d");
   ticks_per_second = physicsEngine->GetInverseSimulationClockTick();
  argos::TConfigurationNode DDSA_node = argos::GetNode(node, "DDSA");
  argos::GetNodeAttribute(DDSA_node, "PrintFinalScore",                   PrintFinalScore);
  argos::GetNodeAttribute(DDSA_node, "FoodDistribution",                  FoodDistribution);
  argos::GetNodeAttribute(DDSA_node, "FoodItemCount",                  FoodItemCount);
  argos::GetNodeAttribute(DDSA_node, "NestRadius",                 NestRadius);
+// argos::GetNodeAttribute(DDSA_node, "NumberOfSpirals",         NumberOfSpirals);
+ //argos::GetNodeAttribute(DDSA_node, "SearcherGap",             SearcherGap);
+    
  //argos::GetNodeAttribute(DDSA_node, "FoodBoundsWidth",                 FoodBoundsWidth);
  //argos::GetNodeAttribute(DDSA_node, "FoodBoundsHeight",                 FoodBoundsHeight); qilu 12/2022
 
@@ -73,44 +75,14 @@ CSimulator     *simulator     = &GetSimulator();
 	}
     
 	SetFoodDistribution();
-	Num_robots = footbots.size();
-	LOG<<"Num_robots="<< Num_robots <<endl;
-	calRegions(Num_robots);
-}
-
-
-void DSA_loop_functions::calRegions(int num_regions)
-{
-	int num_rows = sqrt(num_regions);
-	int num_cols = num_rows;
-	
-	double_t unit = ForageRangeX.GetMax()/num_rows;
-	double_t rangeMax = ForageRangeX.GetMax();
-	
-	CVector2 center, topLeft, bottomRight;
-	CVector2 pos;
-	for(int i =0; i < num_rows; i++)
-	{
-		for(int j =0; j < num_cols; j++)
-		{
-			center = CVector2(rangeMax-(2*i+1)*unit, rangeMax-(2*j+1)*unit);
-			centers.push_back(center);
-			LOG << "center["<<i<<","<<j<<"]="<<center<<endl;
-			topLeft = CVector2(center.GetX()+unit, center.GetY()+unit);
-			//pos = CVector2(center.GetX()+unit, center.GetY()+unit);
-			//topLeftPts.push_back(pos);
-			
-			bottomRight = CVector2(center.GetX()-unit, center.GetY()-unit);
-			//pos = CVector2(center.GetX()-unit, center.GetY()-unit);
-			//bottomRightPts.push_back(pos);
- 
-			//Region reg(center, topLeft, bottomRight);
-			//loopFunctions->RegionList.push_back(reg);
-		}
-	}
+	//NumOfRobots = footbots.size();
+	//LOG<<"NumOfRobots="<< NumOfRobots <<endl;
+    
+    //calRegions(NumOfRobots);
+    //generatePattern(NumberOfSpirals, NumOfRobots);
 	
 }
-	
+
 
 
 double DSA_loop_functions::Score()
@@ -139,7 +111,7 @@ void DSA_loop_functions::PostExperiment()
 void DSA_loop_functions::PreStep() 
 {
     sim_time++;
-    RegionList.clear(); //qilu 02/2023
+    //RegionList.clear(); //qilu 02/2023
 }
 
 argos::Real DSA_loop_functions::getSimTimeInSeconds()

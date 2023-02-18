@@ -6,8 +6,8 @@
 add_library(BaseController SHARED BaseController.h
                                       BaseController.cpp)
 
-add_library(Region           SHARED Region.h
-                                      Region.cpp)
+#add_library(Region           SHARED Region.h
+#                                      Region.cpp)
 
 #add_library(Pheromone           SHARED Pheromone.h
 #                                      Pheromone.cpp)
@@ -21,7 +21,7 @@ target_link_libraries(BaseController
                       argos3plugin_simulator_footbot
                       argos3plugin_simulator_genericrobot)
 
-target_link_libraries(Region)
+#target_link_libraries(Region)
 #target_link_libraries(Pheromone)
 
 ###############################################

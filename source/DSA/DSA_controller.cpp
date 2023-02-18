@@ -12,7 +12,8 @@ DSA_controller::DSA_controller():
     ResetReturnPosition(true),
     stopTimeStep(0),
     m_pcLEDs(NULL),
-    isHoldingFood(false){}
+    isHoldingFood(false)
+	{}
 
 /*****
  * Initialize the controller via the XML configuration file. ARGoS typically
@@ -51,11 +52,13 @@ void DSA_controller::Init(TConfigurationNode& node) {
 		controllerID= GetId();//qilu 07/26/2016
 
     RNG = CRandom::CreateRNG("argos");
-    //calRegions(4);
+    
+	 calRegions(4);
     generatePattern(NumberOfSpirals, NumberOfRobots);
+	
    
-    //LOG<<"RobotNumber="<<RobotNumber<<endl;
-    //SetStartPosition(argos::CVector3(centers[RobotNumber].GetX(), centers[RobotNumber].GetY(), 0.0));
+    //LOG<<"RobotID="<<RobotID<<endl;
+    //SetStartPosition(argos::CVector3(centers[RobotID].GetX(), centers[RobotID].GetY(), 0.0));
     TrailColor = CColor(std::rand()%150, std::rand()%150, std::rand()%150, 255); // we avoid the white or nearly white, so we do not mode the random number by 255 
 
     // Name the results file with the current time and date
@@ -106,13 +109,39 @@ void DSA_controller::Init(TConfigurationNode& node) {
     cout << "Finished Initializing the DDSA" << endl;
 }
 
+void DSA_controller::calRegions(int num_regions)
+{
+	int num_rows = sqrt(num_regions);
+	int num_cols = num_rows;
+	
+	double_t unit = ForageRangeX.GetMax()/num_rows;
+	double_t rangeMax = ForageRangeX.GetMax();
+	
+	CVector2 location;
+	CVector2 pos;
+	for(int i =0; i < num_rows; i++)
+	{
+		for(int j =0; j < num_cols; j++)
+		{
+			location = CVector2(rangeMax-(2*i+1)*unit, rangeMax-(2*j+1)*unit);
+			centers.push_back(location);
+			LOG << "center["<<i<<","<<j<<"]="<<location<<endl;
+			pos = CVector2(location.GetX()+unit, location.GetY()+unit);
+			topLeftPts.push_back(pos);
+			pos = CVector2(location.GetX()-unit, location.GetY()-unit);
+			bottomRightPts.push_back(pos);
+			
+		}
+	}
+	
+}
 	
 bool DSA_controller::IsInTheNest() {
     
 	return ((GetPosition() - loopFunctions->NestPosition).SquareLength()
 		< loopFunctions->NestRadiusSquared);
 	}
-	
+
 void DSA_controller::generatePattern(int N_circuits, int N_robots) //Why is this function not in LoopFuction? qilu 2/2023
 {
     string ID = GetId();
@@ -131,7 +160,7 @@ void DSA_controller::generatePattern(int N_circuits, int N_robots) //Why is this
     for(size_t i=4; i< ID.size(); i++){
       ID_number += ID[i];
     }
-    RobotNumber = stoi(ID_number);
+    RobotID = stoi(ID_number);
     vector<string> paths;
     string ith_robot_steps;
     vector<vector<CVector2>> spiralPoints; //qilu 02/2023
@@ -143,12 +172,9 @@ void DSA_controller::generatePattern(int N_circuits, int N_robots) //Why is this
     for (int i_robot = 1; i_robot <= N_robots; i_robot++)
     {
 		ith_robot_steps +='O';
-		//point = loopFunctions->RegionList[RobotNumber].GetCenter();
-		//point = centers[RobotNumber];
-		point = loopFunctions->centers[RobotNumber];
-		pointVector.push_back(point);
-		
-		for (int i_circuit = 1; i_circuit <= N_circuits; i_circuit++)
+		pointVector.push_back(centers[RobotID]);
+		point = centers[RobotID];
+        for (int i_circuit = 1; i_circuit <= N_circuits; i_circuit++)
         { 
             int n_steps_north = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'N');
             for (int j = 0; j < n_steps_north; j++)
@@ -198,9 +224,8 @@ void DSA_controller::generatePattern(int N_circuits, int N_robots) //Why is this
         pointVector.clear();
         
     }
-    GetPattern(paths[RobotNumber], spiralPoints[RobotNumber]);
+    GetPattern(paths[RobotID], spiralPoints[RobotID]);
 }
-
 int DSA_controller::calcDistanceToTravel(int ith_robot, int ith_circuit, int n_robots, char direction)
 {
 	
@@ -242,6 +267,8 @@ int DSA_controller::calcDistanceToTravel(int ith_robot, int ith_circuit, int n_r
     
     return 0;
 }
+	
+
 
 void DSA_controller::printPath(vector<char>& path)
 {
@@ -300,7 +327,7 @@ void DSA_controller::ControlStep()
   if( DSA == SEARCHING )
   {
       SetIsHeadingToNest(false);
-      //argos::LOG << "SEARCHING" << std::endl;
+      argos::LOG << "SEARCHING" << std::endl;
       SetHoldingFood();
       if (IsHoldingFood())
 	  {
@@ -440,9 +467,9 @@ void DSA_controller::SetTargetW(char x){
 void DSA_controller::SetTargetO(char x){
     CVector2 position = GetTarget();
     SetIsHeadingToNest(false);
-    //SetTarget(loopFunctions->RegionList[RobotNumber].GetCenter());
-    //SetTarget(centers[RobotNumber]);
-    SetTarget(loopFunctions->centers[RobotNumber]);
+    //SetTarget(loopFunctions->RegionList[RobotID].GetCenter());
+    SetTarget(centers[RobotID]);
+    //SetTarget(loopFunctions->centers[RobotID]);
 }
 
 /*****

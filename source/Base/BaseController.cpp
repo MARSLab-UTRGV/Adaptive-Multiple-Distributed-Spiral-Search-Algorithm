@@ -452,11 +452,11 @@ size_t BaseController::SimulationTick() {
 }
 
 size_t BaseController::SimulationTicksPerSecond() {
-    return LF.GetSimulator().GetPhysicsEngine("default").GetInverseSimulationClockTick();
+    return LF.GetSimulator().GetPhysicsEngine("dyn2d").GetInverseSimulationClockTick();
 }
 
 argos::Real BaseController::SimulationSecondsPerTick() {
-    return LF.GetSimulator().GetPhysicsEngine("default").GetSimulationClockTick();
+    return LF.GetSimulator().GetPhysicsEngine("dyn2d").GetSimulationClockTick();
 }
 
 argos::Real BaseController::SimulationTimeInSeconds() {

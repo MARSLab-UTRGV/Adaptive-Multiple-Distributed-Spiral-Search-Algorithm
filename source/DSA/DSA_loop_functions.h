@@ -5,7 +5,7 @@
 #include <argos3/plugins/robots/foot-bot/simulator/footbot_entity.h>
 #include <argos3/core/simulator/entity/floor_entity.h>
 #include <source/DSA/DSA_controller.h>
-#include <source/Base/Region.h>
+//#include <source/Base/Region.h>
 using namespace argos;
 using namespace std;
 
@@ -29,14 +29,16 @@ class DSA_loop_functions : public argos::CLoopFunctions {
 
         void SetFoodDistribution();
         
-        void calRegions(int num_regions); //qilu 12/2022
+        //void calRegions(int num_regions); //qilu 12/2022
+        //void generatePattern(int N_circuits, int N_robots);
+		//int    calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
 		
 
 	argos::Real getSimTimeInSeconds();
 
 	protected:
 	
-	size_t Num_robots;
+	//size_t NumOfRobots;
 
 	void setScore(double s);
 
@@ -75,7 +77,7 @@ class DSA_loop_functions : public argos::CLoopFunctions {
 	argos::Real FoodBoundsWidth;
 	argos::Real FoodBoundsHeight;
 	/* regions qilu 02/2023*/
-	std::vector<Region>   RegionList; 
+	//std::vector<Region>   RegionList; 
 	
 	
         /* list variables for food */
@@ -104,9 +106,12 @@ class DSA_loop_functions : public argos::CLoopFunctions {
 	double score;
 	int PrintFinalScore;
 	
-	vector<CVector2>    centers; //qilu 2/2023
-        vector<CVector2>    topLeftPts; //qilu 2/2023
-        vector<CVector2>    bottomRightPts; //qilu 2/2023
+	//vector<CVector2>    centers; //qilu 2/2023
+     //   vector<CVector2>    topLeftPts; //qilu 2/2023
+      //  vector<CVector2>    bottomRightPts; //qilu 2/2023
+       // size_t NumberOfSpirals;
+       // size_t	RobotID; // start from 0 qilu 12/2022
+        // Real                SearcherGap;
         
 };
 

@@ -48,14 +48,14 @@
 	<!-- Modify TargetDistanceTolerance to Simulate Error -->
 	<!-- "NumberOfRobots" should be the same as "quantity" below-->
         <settings ProbTargetDetection    = "0.10"
-	          NumberOfRobots          = "4" 
+                  NumberOfRobots          = "4" 
                   NumberOfSpirals         = "10"
                   NestDistanceTolerance = "0.01"  
                   NestAngleTolerance = "0.05"  
                   TargetDistanceTolerance = "0.01"  
                   TargetAngleTolerance = "0.05"
                   FoodDistanceTolerance   = "0.13"
-                  SearcherGap             = "0.18"
+		  SearcherGap             = "0.18"
 		  SearchStepSize          = "0.08"
                   RobotForwardSpeed       = "16.0"
                   RobotRotationSpeed      = "8.0"

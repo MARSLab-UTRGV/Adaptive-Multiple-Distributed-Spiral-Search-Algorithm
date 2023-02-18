@@ -23,7 +23,7 @@ add_definitions("-DGIT_BRANCH=\"${GIT_BRANCH}\"")
 # define shared object files
 ###############################################
 
-add_library(DSA_loop_functions SHARED DSA_loop_functions.h
+add_library(DSA_loop_functions MODULE DSA_loop_functions.h
                                       DSA_loop_functions.cpp
                                       DSA_qt_user_functions.h
                                       DSA_qt_user_functions.cpp)
@@ -38,8 +38,7 @@ add_library(DSA_controller     SHARED DSA_controller.h
 ###############################################
 
 target_link_libraries(DSA_controller
-		      BaseController
-		      Region)
+		      BaseController)
 
 target_link_libraries(DSA_loop_functions
                       DSA_controller
