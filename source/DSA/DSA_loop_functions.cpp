@@ -4,14 +4,14 @@ DSA_loop_functions::DSA_loop_functions() :
 	RNG(argos::CRandom::CreateRNG("argos")),
     //MaxSimTime(3600 * GetSimulator().GetPhysicsEngine("default").GetInverseSimulationClockTick()),
     ResourceDensityDelay(0),
-    //RandomSeed(GetSimulator().GetRandomSeed()),
+    RandomSeed(GetSimulator().GetRandomSeed()),
     SimCounter(0),
     MaxSimCounter(1),
     VariableFoodPlacement(0),
     OutputData(0),
     DrawDensityRate(4),
-//    DrawIDs(1),
-    DrawIDs(0),
+    DrawIDs(1),
+    //DrawIDs(0),
     DrawTrails(0),
     DrawTargetRays(0),
     FoodDistribution(1),
@@ -43,23 +43,17 @@ CSimulator     *simulator     = &GetSimulator();
  argos::GetNodeAttribute(DDSA_node, "NestRadius",                 NestRadius);
  argos::GetNodeAttribute(DDSA_node, "NumberOfSpirals",         NumberOfSpirals);
  argos::GetNodeAttribute(DDSA_node, "SearcherGap",             SearcherGap);
-    
- //argos::GetNodeAttribute(DDSA_node, "FoodBoundsWidth",                 FoodBoundsWidth);
- //argos::GetNodeAttribute(DDSA_node, "FoodBoundsHeight",                 FoodBoundsHeight); qilu 12/2022
-
+   
  NestRadiusSquared = NestRadius*NestRadius;
 
     //Calculate the forage range 
     //The robot's radius is 0.085m
-	//The half of wall width: 0.05/2 meter 
 	//The proximity range is 10cm (or 0.1m) qilu 12/2022 
 	
     argos::CVector3 ArenaSize = GetSpace().GetArenaSize();
-    argos::Real rangeX = ArenaSize.GetX() / 2.0;
-	argos::Real rangeY = ArenaSize.GetY() / 2.0;
+    argos::Real rangeX = ArenaSize.GetX() / 2.0 - 0.185;
+	argos::Real rangeY = ArenaSize.GetY() / 2.0 - 0.185;
 	
-    //argos::Real rangeX = FoodBoundsWidth/2.0;//(ArenaSize.GetX() / 2.0) - 0.085;
-    //argos::Real rangeY = FoodBoundsHeight/2.0;//(ArenaSize.GetY() / 2.0) - 0.085;  
     ForageRangeX.Set(-rangeX, rangeX);
     ForageRangeY.Set(-rangeY, rangeY);
 
@@ -113,19 +107,10 @@ void DSA_loop_functions::calRegions(int num_regions)
 
 void DSA_loop_functions::generatePattern(int N_circuits, int N_robots) //Why is this function not in LoopFuction? qilu 2/2023
 {
-    /* string ID = GetId();
-    string ID_number;
-    LOG<<"ID = "<<ID<<endl;
-      
-    for(size_t i=4; i< ID.size(); i++){
-      ID_number += ID[i];
-    }
-    RobotID = stoi(ID_number);
-    */
     string ith_robot_steps;
     
 	vector<CVector2> pointVector;
-	CVector2 point, verfiedPoint;
+	CVector2 point;
 	argos::Real x, y;
     int n_steps_north, n_steps_east, n_steps_south, n_steps_west;
     
@@ -134,9 +119,7 @@ void DSA_loop_functions::generatePattern(int N_circuits, int N_robots) //Why is 
     {
 		ith_robot_steps +='O';
 		point = centers[i_robot];
-        verfiedPoint = point;
-        pointVector.push_back(verfiedPoint);
-        LOG<<"topLeftPts[" <<i_robot<<"]="<< topLeftPts[i_robot]<< ", "<< "bottomRightPts[" << i_robot<< "]="<<bottomRightPts[i_robot]<<endl;
+        pointVector.push_back(point);
                 
 		for (int i_circuit = 1; i_circuit <= N_circuits; i_circuit++)
         { 
@@ -144,13 +127,12 @@ void DSA_loop_functions::generatePattern(int N_circuits, int N_robots) //Why is 
            
             if(n_steps_north > 0)
             {
-                x = verfiedPoint.GetX() + n_steps_north*SearcherGap;
-                y = verfiedPoint.GetY();
+                x = point.GetX() + n_steps_north*SearcherGap;
+                y = point.GetY();
                 point = CVector2(x, y);
                 // check whether the point is out of the region qilu 02/2023
-                verfiedPoint = CheckSpiralPoint(i_robot, point);
-                if(verfiedPoint.GetX() != 0 || verfiedPoint.GetY() != 0) pointVector.push_back(verfiedPoint);
-                else break;
+                pointVector.push_back(point);
+                if(!CanGenerateSpiralPoint(i_robot, point)) break;
             }    
  
         
@@ -160,9 +142,8 @@ void DSA_loop_functions::generatePattern(int N_circuits, int N_robots) //Why is 
                 x = point.GetX();
                 y = point.GetY() - n_steps_east*SearcherGap; 
                 point = CVector2(x, y);
-               verfiedPoint = CheckSpiralPoint(i_robot, point);
-                if(verfiedPoint.GetX() != 0 || verfiedPoint.GetY() != 0) pointVector.push_back(verfiedPoint);
-                else break;
+               pointVector.push_back(point);
+               if(!CanGenerateSpiralPoint(i_robot, point)) break;
              }
             
             n_steps_south = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'S');
@@ -172,9 +153,8 @@ void DSA_loop_functions::generatePattern(int N_circuits, int N_robots) //Why is 
                 x = point.GetX() - n_steps_south*SearcherGap;
                 y = point.GetY();
                 point = CVector2(x, y);
-                verfiedPoint = CheckSpiralPoint(i_robot, point);
-                if(verfiedPoint.GetX() != 0 || verfiedPoint.GetY() != 0) pointVector.push_back(verfiedPoint);
-                else break;
+                pointVector.push_back(point);
+               if(!CanGenerateSpiralPoint(i_robot, point)) break;
             }
             
             n_steps_west = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'W');
@@ -184,51 +164,26 @@ void DSA_loop_functions::generatePattern(int N_circuits, int N_robots) //Why is 
                 x = point.GetX();
                 y = point.GetY() + n_steps_west*SearcherGap;
                 point = CVector2(x, y);
-                verfiedPoint = CheckSpiralPoint(i_robot, point);
-                if(verfiedPoint.GetX() != 0 || verfiedPoint.GetY() != 0) pointVector.push_back(verfiedPoint);
-                else break;
+                pointVector.push_back(point);
+               if(!CanGenerateSpiralPoint(i_robot, point)) break;
             }
         }
-        LOG<<"ith_robot_steps="<<ith_robot_steps<< ", len="<< ith_robot_steps.size()<<endl;
 		paths.push_back(ith_robot_steps);
         ith_robot_steps.clear();
         
-        for(int i=0; i< pointVector.size(); i++){
-        LOG<<"pointVector["<< i << "]=" <<pointVector[i] <<endl;
-        }
-        
-        LOG<<"pointVector size="<< pointVector.size()<<endl;
+        //LOG<<"pointVector size="<< pointVector.size()<<endl;
         spiralPoints.push_back(pointVector);
         pointVector.clear();
         
     }
-    //GetPattern(paths[RobotID], spiralPoints[RobotID]);
 }
 
-CVector2 DSA_loop_functions::CheckSpiralPoint(int idx_robot, CVector2 point)
+bool DSA_loop_functions::CanGenerateSpiralPoint(int idx_robot, CVector2 point)
 {
-    LOG<< "point.X = "<< point.GetX()<<", point.Y = "<< point.GetY()  << endl;
-    if(point.GetX()> topLeftPts[idx_robot].GetX() || point.GetY() > topLeftPts[idx_robot].GetY() || point.GetX()< bottomRightPts[idx_robot].GetX() || point.GetY() < bottomRightPts[idx_robot].GetY())
-    {
-        return CVector2(0,0);
-        }
-        else
-        {
-            return point;
-            }
-    /*if( (point.GetX()> topLeftPts[idx_robot].GetX() && point.GetY() > topLeftPts[idx_robot].GetY()) || (point.GetX()< bottomRightPts[idx_robot].GetX() && point.GetY() < bottomRightPts[idx_robot].GetY()) )
-    {    LOG<<"out of region"<<endl;    
-        return CVector2(0,0);
-    }
-    else 
-    {
-        if(point.GetX()> topLeftPts[idx_robot].GetX()) point.SetX(topLeftPts[idx_robot].GetX() - 0.185);
-        else if(point.GetY() > topLeftPts[idx_robot].GetY()) point.SetY(topLeftPts[idx_robot].GetY() - 0.185);
-        else if(point.GetX()< bottomRightPts[idx_robot].GetX()) point.SetX(bottomRightPts[idx_robot].GetX() + 0.185);
-        else if(point.GetY() < bottomRightPts[idx_robot].GetY()) point.SetX(bottomRightPts[idx_robot].GetX() + 0.185);
-        LOG<<"* point="<<point<<endl;
-        return point; 
-     }*/    
+    //LOG<< "point.X = "<< point.GetX()<<", point.Y = "<< point.GetY()  << endl;
+    if((point.GetX()> topLeftPts[idx_robot].GetX() && point.GetY() > topLeftPts[idx_robot].GetY()) || (point.GetX()< bottomRightPts[idx_robot].GetX() && point.GetY() < bottomRightPts[idx_robot].GetY()) )
+        return false;
+    else return true;
 }
     
 int DSA_loop_functions::calcDistanceToTravel(int ith_robot, int ith_circuit, int n_robots, char direction)

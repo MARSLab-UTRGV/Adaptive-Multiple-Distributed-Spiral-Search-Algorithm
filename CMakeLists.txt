@@ -41,22 +41,23 @@ endif()
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
 
 # Find the ARGoS package.
-#find_package(ARGoS REQUIRED)
-#include_directories(${CMAKE_SOURCE_DIR} ${ARGOS_INCLUDE_DIRS})
-#link_directories(${ARGOS_LIBRARY_DIR})
-#link_libraries(${ARGOS_LDFLAGS})
+# This is for Ubuntu 22. qilu 02/2023
+find_package(ARGoS REQUIRED)
+include_directories(${CMAKE_SOURCE_DIR} ${ARGOS_INCLUDE_DIRS})
+link_directories(${ARGOS_LIBRARY_DIR})
+link_libraries(${ARGOS_LDFLAGS})
 
 
-#the following block about ARGoS package is from ARGOS examples
+#The following block about ARGoS package is from ARGOS examples. It is for Ubuntu 18. qilu 02/2023
 # Find the ARGoS package, make sure to save the ARGoS prefix
-find_package(PkgConfig)
-pkg_check_modules(ARGOS REQUIRED argos3_simulator)
-#set(ARGOS_PREFIX ${ARGOS_PREFIX} CACHE INTERNAL "")
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ARGOS_PREFIX}/share/argos3/cmake)
+#find_package(PkgConfig)
+#pkg_check_modules(ARGOS REQUIRED argos3_simulator)
+##set(ARGOS_PREFIX ${ARGOS_PREFIX} CACHE INTERNAL "")
+#set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${ARGOS_PREFIX}/share/argos3/cmake)
 
 # Check for required libraries to compile code depending on Qt and OpenGL.
-# This fix the qt opengl mainwindow QMainWindow: No such file or directory problem 02/2023 qilu
- include(ARGoSCheckQTOpenGL)
+# This fix the qt opengl mainwindow QMainWindow: No such file or directory problem. It is for Ubuntu 18. If your system is Ubuntu 22, please remove the following command. 02/2023 qilu
+# include(ARGoSCheckQTOpenGL)
 
 
 # Find the GSL package.

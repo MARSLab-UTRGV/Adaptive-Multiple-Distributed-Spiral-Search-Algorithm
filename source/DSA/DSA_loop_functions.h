@@ -105,7 +105,7 @@ class DSA_loop_functions : public argos::CLoopFunctions {
         bool IsOutOfBounds(argos::CVector2 p, size_t length, size_t width);
         bool IsCollidingWithNest(argos::CVector2 p);
         bool IsCollidingWithFood(argos::CVector2 p);
-        CVector2 CheckSpiralPoint(int idx_robot, CVector2 point);
+        bool CanGenerateSpiralPoint(int idx_robot, CVector2 point);
 
 	double score;
 	int PrintFinalScore;

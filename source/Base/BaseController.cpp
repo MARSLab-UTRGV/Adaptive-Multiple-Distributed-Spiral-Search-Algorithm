@@ -2,6 +2,7 @@
 #include <random>
 
 using namespace std;
+using namespace argos;
 
 /**
  * Constructor for the BaseController. Several important variables are defined here.
@@ -23,15 +24,17 @@ BaseController::BaseController() :
     heading_to_nest(false),
     DestinationNoiseStdev(0),
     PositionNoiseStdev(0),
-    RNG(argos::CRandom::CreateRNG("argos"))
+	collision_counter(0),
+	collisionDelay(0),
+	RNG(argos::CRandom::CreateRNG("argos"))
 {
     // calculate the forage range and compensate for the robot's radius of 0.085m
+    //The proximity range is 10cm (or 0.1m) 
     argos::CVector3 ArenaSize = LF.GetSpace().GetArenaSize();
-    argos::Real rangeX = (ArenaSize.GetX() / 2.0) - 0.085;
-    argos::Real rangeY = (ArenaSize.GetY() / 2.0) - 0.085;
+    argos::Real rangeX = (ArenaSize.GetX() / 2.0) - 0.285;
+    argos::Real rangeY = (ArenaSize.GetY() / 2.0) - 0.285;
     ForageRangeX.Set(-rangeX, rangeX);
     ForageRangeY.Set(-rangeY, rangeY);
-    //GoStraightAngleRangeInDegrees.Set(-37.5, 37.5); 
     GoStraightAngleRangeInDegrees.Set(-80, 80); 
 }
 
@@ -80,14 +83,6 @@ void BaseController::SetTarget(argos::CVector2 t) {
 
   argos::Real x(t.GetX()), y(t.GetY());
 
-  //if(x > ForageRangeX.GetMax()) x = ForageRangeX.GetMax();
-  //else if(x < ForageRangeX.GetMin()) x = ForageRangeX.GetMin();
-  
-  //if(y > ForageRangeY.GetMax()) y = ForageRangeY.GetMax();
-  //else if(y < ForageRangeY.GetMin()) y = ForageRangeY.GetMin();
-  
-  //argos::LOG << "<<Updating Target Position>>" << std::endl;
-
   if (!heading_to_nest)
     {
       argos::Real distanceToTarget = (TargetPosition - GetPosition()).Length();
@@ -106,38 +101,22 @@ void BaseController::SetTarget(argos::CVector2 t) {
       //argos::LOG << "Heading to Nest " << std::endl;
     }
 
-  
-argos::LOG << "input Target: ("<< x << ", "<< y << ")"<< std::endl;
   if( y > ForageRangeY.GetMax() 
       || y < ForageRangeY.GetMin()
       || x > ForageRangeX.GetMax()
       || x < ForageRangeX.GetMin() )
     {
         if(y > ForageRangeY.GetMax())
-        {
-            y = ForageRangeY.GetMax();
-            argos::LOG<<"1, y="<<y<<endl;
-        }
-        else if(y < ForageRangeY.GetMin())
-        {
-            y = ForageRangeY.GetMin();
-            argos::LOG<<"2, y="<<y<<endl;
-        }
-        else if(x > ForageRangeX.GetMax())
-        {
-            x = ForageRangeX.GetMax();
-            argos::LOG<<"3, x="<<x<<endl;
-        }
-        else if(x < ForageRangeX.GetMin())
-        {
-            x = ForageRangeX.GetMin();
-            argos::LOG<<"4, x="<<x<<endl;
-        }
+        { y = ForageRangeY.GetMax(); }
+        if(y < ForageRangeY.GetMin())
+        { y = ForageRangeY.GetMin(); }
+        if(x > ForageRangeX.GetMax())
+        { x = ForageRangeX.GetMax(); }
+        if(x < ForageRangeX.GetMin())
+        { x = ForageRangeX.GetMin(); }
         
       SetRightTurn(37.5);
     }
-
-   argos::LOG << "New Target: ("<< x << ", "<< y << ")"<< std::endl;
 
   TargetPosition = argos::CVector2(x, y);
   argos::Real distanceToTarget = (TargetPosition - GetPosition()).Length();
@@ -329,6 +308,10 @@ void BaseController::PopMovement() {
 
 }
 
+unsigned int BaseController::GetCollisionTime(){
+ return collision_counter;
+ }
+ 
 bool BaseController::CollisionDetection() {
 
     argos::CVector2 collisionVector = GetCollisionVector();
@@ -345,16 +328,15 @@ bool BaseController::CollisionDetection() {
 
         PushMovement(FORWARD, SearchStepSize);
 
-        if(collisionAngle <= 0.0) 
-	  {
-	    argos::LOG << "collision 1: "<<collisionAngle << std::endl << collisionVector << std::endl << std::endl;
-            SetLeftTurn(37.5 - collisionAngle);
-	  } 
-	else 
-	  {
-	    argos::LOG << "collision 2: "<< collisionAngle << std::endl << collisionVector << std::endl << std::endl;
-            SetRightTurn(37.5 + collisionAngle);
-	  }
+     	if(collisionAngle <= 0.0)  {
+			//argos::LOG << collisionAngle << std::endl << collisionVector << std::endl << std::endl;
+			SetLeftTurn(collisionAngle); //qilu 02/2023
+		} else {
+			//argos::LOG << collisionAngle << std::endl << collisionVector << std::endl << std::endl;
+			SetRightTurn(collisionAngle); //qilu 02/2023
+		}
+		Real randomNumber = RNG->Uniform(CRange<Real>(0.5, 1.0));
+        collisionDelay = SimulationTick() + (size_t)(randomNumber*SimulationTicksPerSecond());//qilu 02/2023
     }
 
     return isCollisionDetected;
@@ -386,8 +368,8 @@ void BaseController::Stop() {
 void BaseController::Move() {
 
     if(Wait() == true) return;
-
-    CollisionDetection();
+	collisionFlag = CollisionDetection();
+    //CollisionDetection();
     //argos::LOG<<"CurrentMovementState="<<CurrentMovementState<<endl;
     //argos::LOG<<"TicksToWaitWhileMoving="<<TicksToWaitWhileMoving<<endl;
     /* move based on the movement state flag */
@@ -405,10 +387,10 @@ void BaseController::Move() {
         case LEFT: {
             if((TicksToWaitWhileMoving--) <= 0.0) {
                 Stop();
-            } else {
-	      //argos::LOG << "LEFT\n";
+         			}else if(collisionDelay< SimulationTick() || collisionFlag){  //qilu 02/2023
                 wheelActuator->SetLinearVelocity(-RobotRotationSpeed, RobotRotationSpeed);
             }
+				else wheelActuator->SetLinearVelocity(RobotForwardSpeed, RobotForwardSpeed);  //qilu 02/2023
             break;
         }
 
@@ -416,10 +398,11 @@ void BaseController::Move() {
         case RIGHT: {
             if((TicksToWaitWhileMoving--) <= 0.0) {
                 Stop();
-            } else {
-	      //argos::LOG << "RIGHT\n";
+		} else if(collisionDelay< SimulationTick()|| collisionFlag){ //qilu 02/2023
+				//argos::LOG << "RIGHT\n";
                 wheelActuator->SetLinearVelocity(RobotRotationSpeed, -RobotRotationSpeed);
             }
+ 		else wheelActuator->SetLinearVelocity(RobotForwardSpeed, RobotForwardSpeed);  //qilu 02/2023  
             break;
         }
 

@@ -70,9 +70,6 @@ class DSA_controller : public BaseController {
 	CVector2            previous_target;
 	CVector2            newTarget;
         CVector3            startPosition;
-        //vector<CVector2>    centers; //qilu 12/2022
-        //vector<CVector2>    topLeftPts; //qilu 2/2023
-        //vector<CVector2>    bottomRightPts; //qilu 2/2023
         
         vector<char>        pattern;
         vector<CVector2>    spiral; //qilu 2/2023
@@ -92,12 +89,6 @@ class DSA_controller : public BaseController {
 
         /* movement functions */
         CDegrees angleInDegrees;
-
-        void SetTargetN(char x);
-        void SetTargetS(char x);
-        void SetTargetE(char x);
-        void SetTargetW(char x);
-        void SetTargetO(char x);
     
         /* movement helper functions */
         void ReachSpiralTargets();
