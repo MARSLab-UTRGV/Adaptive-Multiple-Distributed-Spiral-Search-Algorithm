@@ -15,7 +15,6 @@ DSA_loop_functions::DSA_loop_functions() :
     DrawTrails(0),
     DrawTargetRays(0),
     FoodDistribution(1),
-//    FoodDistribution(9),
     FoodItemCount(256),
     NumberOfClusters(4),
     ClusterWidthX(8),
@@ -35,13 +34,16 @@ DSA_loop_functions::DSA_loop_functions() :
 
 void DSA_loop_functions::Init(TConfigurationNode& node) {
 CSimulator     *simulator     = &GetSimulator();
-  CPhysicsEngine *physicsEngine = &simulator->GetPhysicsEngine("default");
+  CPhysicsEngine *physicsEngine = &simulator->GetPhysicsEngine("dyn2d");
   ticks_per_second = physicsEngine->GetInverseSimulationClockTick();
  argos::TConfigurationNode DDSA_node = argos::GetNode(node, "DDSA");
  argos::GetNodeAttribute(DDSA_node, "PrintFinalScore",                   PrintFinalScore);
  argos::GetNodeAttribute(DDSA_node, "FoodDistribution",                  FoodDistribution);
  argos::GetNodeAttribute(DDSA_node, "FoodItemCount",                  FoodItemCount);
  argos::GetNodeAttribute(DDSA_node, "NestRadius",                 NestRadius);
+ argos::GetNodeAttribute(DDSA_node, "NumberOfSpirals",         NumberOfSpirals);
+ argos::GetNodeAttribute(DDSA_node, "SearcherGap",             SearcherGap);
+    
  //argos::GetNodeAttribute(DDSA_node, "FoodBoundsWidth",                 FoodBoundsWidth);
  //argos::GetNodeAttribute(DDSA_node, "FoodBoundsHeight",                 FoodBoundsHeight); qilu 12/2022
 
@@ -73,8 +75,203 @@ CSimulator     *simulator     = &GetSimulator();
 	}
     
 	SetFoodDistribution();
+	NumOfRobots = footbots.size();
+	//LOG<<"NumOfRobots="<< NumOfRobots <<endl;
+    
+    calRegions(4);
+    generatePattern(NumberOfSpirals, NumOfRobots);
+	
 }
 
+
+void DSA_loop_functions::calRegions(int num_regions)
+{
+	int num_rows = sqrt(num_regions);
+	int num_cols = num_rows;
+	
+	double_t unit = ForageRangeX.GetMax()/num_rows;
+	double_t rangeMax = ForageRangeX.GetMax();
+	
+	CVector2 location;
+	CVector2 pos;
+	for(int i =0; i < num_rows; i++)
+	{
+		for(int j =0; j < num_cols; j++)
+		{
+			location = CVector2(rangeMax-(2*i+1)*unit, rangeMax-(2*j+1)*unit);
+			centers.push_back(location);
+			LOG << "center["<<i<<","<<j<<"]="<<location<<endl;
+			pos = CVector2(location.GetX()+unit, location.GetY()+unit);
+			topLeftPts.push_back(pos);
+			pos = CVector2(location.GetX()-unit, location.GetY()-unit);
+			bottomRightPts.push_back(pos);
+			
+		}
+	}
+	
+}
+
+void DSA_loop_functions::generatePattern(int N_circuits, int N_robots) //Why is this function not in LoopFuction? qilu 2/2023
+{
+    /* string ID = GetId();
+    string ID_number;
+    LOG<<"ID = "<<ID<<endl;
+      
+    for(size_t i=4; i< ID.size(); i++){
+      ID_number += ID[i];
+    }
+    RobotID = stoi(ID_number);
+    */
+    string ith_robot_steps;
+    
+	vector<CVector2> pointVector;
+	CVector2 point, verfiedPoint;
+	argos::Real x, y;
+    int n_steps_north, n_steps_east, n_steps_south, n_steps_west;
+    
+    
+    for (int i_robot = 0; i_robot < N_robots; i_robot++)
+    {
+		ith_robot_steps +='O';
+		point = centers[i_robot];
+        verfiedPoint = point;
+        pointVector.push_back(verfiedPoint);
+        LOG<<"topLeftPts[" <<i_robot<<"]="<< topLeftPts[i_robot]<< ", "<< "bottomRightPts[" << i_robot<< "]="<<bottomRightPts[i_robot]<<endl;
+                
+		for (int i_circuit = 1; i_circuit <= N_circuits; i_circuit++)
+        { 
+            n_steps_north = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'N');
+           
+            if(n_steps_north > 0)
+            {
+                x = verfiedPoint.GetX() + n_steps_north*SearcherGap;
+                y = verfiedPoint.GetY();
+                point = CVector2(x, y);
+                // check whether the point is out of the region qilu 02/2023
+                verfiedPoint = CheckSpiralPoint(i_robot, point);
+                if(verfiedPoint.GetX() != 0 || verfiedPoint.GetY() != 0) pointVector.push_back(verfiedPoint);
+                else break;
+            }    
+ 
+        
+            n_steps_east = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'E');
+            if(n_steps_east > 0)
+            {
+                x = point.GetX();
+                y = point.GetY() - n_steps_east*SearcherGap; 
+                point = CVector2(x, y);
+               verfiedPoint = CheckSpiralPoint(i_robot, point);
+                if(verfiedPoint.GetX() != 0 || verfiedPoint.GetY() != 0) pointVector.push_back(verfiedPoint);
+                else break;
+             }
+            
+            n_steps_south = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'S');
+            
+            if(n_steps_south > 0)
+            {
+                x = point.GetX() - n_steps_south*SearcherGap;
+                y = point.GetY();
+                point = CVector2(x, y);
+                verfiedPoint = CheckSpiralPoint(i_robot, point);
+                if(verfiedPoint.GetX() != 0 || verfiedPoint.GetY() != 0) pointVector.push_back(verfiedPoint);
+                else break;
+            }
+            
+            n_steps_west = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'W');
+           
+            if(n_steps_west > 0)
+            {
+                x = point.GetX();
+                y = point.GetY() + n_steps_west*SearcherGap;
+                point = CVector2(x, y);
+                verfiedPoint = CheckSpiralPoint(i_robot, point);
+                if(verfiedPoint.GetX() != 0 || verfiedPoint.GetY() != 0) pointVector.push_back(verfiedPoint);
+                else break;
+            }
+        }
+        LOG<<"ith_robot_steps="<<ith_robot_steps<< ", len="<< ith_robot_steps.size()<<endl;
+		paths.push_back(ith_robot_steps);
+        ith_robot_steps.clear();
+        
+        for(int i=0; i< pointVector.size(); i++){
+        LOG<<"pointVector["<< i << "]=" <<pointVector[i] <<endl;
+        }
+        
+        LOG<<"pointVector size="<< pointVector.size()<<endl;
+        spiralPoints.push_back(pointVector);
+        pointVector.clear();
+        
+    }
+    //GetPattern(paths[RobotID], spiralPoints[RobotID]);
+}
+
+CVector2 DSA_loop_functions::CheckSpiralPoint(int idx_robot, CVector2 point)
+{
+    LOG<< "point.X = "<< point.GetX()<<", point.Y = "<< point.GetY()  << endl;
+    if(point.GetX()> topLeftPts[idx_robot].GetX() || point.GetY() > topLeftPts[idx_robot].GetY() || point.GetX()< bottomRightPts[idx_robot].GetX() || point.GetY() < bottomRightPts[idx_robot].GetY())
+    {
+        return CVector2(0,0);
+        }
+        else
+        {
+            return point;
+            }
+    /*if( (point.GetX()> topLeftPts[idx_robot].GetX() && point.GetY() > topLeftPts[idx_robot].GetY()) || (point.GetX()< bottomRightPts[idx_robot].GetX() && point.GetY() < bottomRightPts[idx_robot].GetY()) )
+    {    LOG<<"out of region"<<endl;    
+        return CVector2(0,0);
+    }
+    else 
+    {
+        if(point.GetX()> topLeftPts[idx_robot].GetX()) point.SetX(topLeftPts[idx_robot].GetX() - 0.185);
+        else if(point.GetY() > topLeftPts[idx_robot].GetY()) point.SetY(topLeftPts[idx_robot].GetY() - 0.185);
+        else if(point.GetX()< bottomRightPts[idx_robot].GetX()) point.SetX(bottomRightPts[idx_robot].GetX() + 0.185);
+        else if(point.GetY() < bottomRightPts[idx_robot].GetY()) point.SetX(bottomRightPts[idx_robot].GetX() + 0.185);
+        LOG<<"* point="<<point<<endl;
+        return point; 
+     }*/    
+}
+    
+int DSA_loop_functions::calcDistanceToTravel(int ith_robot, int ith_circuit, int n_robots, char direction)
+{
+	
+    int Num_robots = 1; // one robot in each region qilu 12/2022
+    ith_robot = 0; // qilu 2/2023 one robot in each region 
+    
+    int n_steps  = 0;
+
+	// the following algorithm is based on Qi Lu's 2019 ICRA paper 
+    if (direction == 'N' || direction == 'E')
+    {
+        if (ith_circuit == 1)
+        {
+            n_steps = ith_robot;
+            return n_steps;
+        }
+        else 
+        {
+            n_steps = (2*ith_circuit -3)*Num_robots + 2*ith_robot;
+            return n_steps;
+        }
+    }
+
+    else if (direction == 'S' || direction == 'W')
+    {
+        if (ith_circuit == 1)
+        {
+            n_steps = 2*ith_robot;
+            return n_steps;
+        }
+
+        else
+        {
+            n_steps = calcDistanceToTravel(ith_robot, ith_circuit, Num_robots, 'N') + Num_robots;
+            return n_steps;
+        }
+
+    }  
+    
+    return 0;
+}
 
 double DSA_loop_functions::Score()
 {  
@@ -88,7 +285,8 @@ void DSA_loop_functions::setScore(double s)
   if (score >= FoodItemCount) 
     {
       PostExperiment();
-      exit(0);
+      exit(0); //when you debug your code, you may set the number of food to be 1 or 2. 
+               //This line will be hit and exit the simulation. You may think there is an issue in your code. qilu 2/2023 
     }
 }
 
@@ -101,6 +299,7 @@ void DSA_loop_functions::PostExperiment()
 void DSA_loop_functions::PreStep() 
 {
     sim_time++;
+    //RegionList.clear(); //qilu 02/2023
 }
 
 argos::Real DSA_loop_functions::getSimTimeInSeconds()

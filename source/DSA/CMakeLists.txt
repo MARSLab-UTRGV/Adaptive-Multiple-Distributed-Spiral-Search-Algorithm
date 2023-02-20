@@ -30,7 +30,7 @@ add_library(DSA_loop_functions MODULE DSA_loop_functions.h
 
 add_library(DSA_controller     SHARED DSA_controller.h
                                       DSA_controller.cpp
-									  DSA_loop_functions.h
+                                      DSA_loop_functions.h
                                       DSA_loop_functions.cpp)
 
 ###############################################
@@ -38,7 +38,7 @@ add_library(DSA_controller     SHARED DSA_controller.h
 ###############################################
 
 target_link_libraries(DSA_controller
-					  BaseController)
+		      BaseController)
 
 target_link_libraries(DSA_loop_functions
                       DSA_controller
