@@ -31,7 +31,8 @@ BaseController::BaseController() :
     argos::Real rangeY = (ArenaSize.GetY() / 2.0) - 0.085;
     ForageRangeX.Set(-rangeX, rangeX);
     ForageRangeY.Set(-rangeY, rangeY);
-    GoStraightAngleRangeInDegrees.Set(-37.5, 37.5);
+    //GoStraightAngleRangeInDegrees.Set(-37.5, 37.5); 
+    GoStraightAngleRangeInDegrees.Set(-80, 80); 
 }
 
 argos::CRadians BaseController::GetHeading() {
@@ -106,19 +107,37 @@ void BaseController::SetTarget(argos::CVector2 t) {
     }
 
   
-
+argos::LOG << "input Target: ("<< x << ", "<< y << ")"<< std::endl;
   if( y > ForageRangeY.GetMax() 
       || y < ForageRangeY.GetMin()
       || x > ForageRangeX.GetMax()
       || x < ForageRangeX.GetMin() )
     {
-      x = GetPosition().GetX();
-      y = GetPosition().GetY();
+        if(y > ForageRangeY.GetMax())
+        {
+            y = ForageRangeY.GetMax();
+            argos::LOG<<"1, y="<<y<<endl;
+        }
+        else if(y < ForageRangeY.GetMin())
+        {
+            y = ForageRangeY.GetMin();
+            argos::LOG<<"2, y="<<y<<endl;
+        }
+        else if(x > ForageRangeX.GetMax())
+        {
+            x = ForageRangeX.GetMax();
+            argos::LOG<<"3, x="<<x<<endl;
+        }
+        else if(x < ForageRangeX.GetMin())
+        {
+            x = ForageRangeX.GetMin();
+            argos::LOG<<"4, x="<<x<<endl;
+        }
+        
       SetRightTurn(37.5);
     }
 
-  // argos::LOG << "New Target x: "<< x << std::endl;
-  //  argos::LOG << "New Target y:" << y << std::endl;
+   argos::LOG << "New Target: ("<< x << ", "<< y << ")"<< std::endl;
 
   TargetPosition = argos::CVector2(x, y);
   argos::Real distanceToTarget = (TargetPosition - GetPosition()).Length();
@@ -140,7 +159,6 @@ argos::CVector3 BaseController::GetStartPosition() {
 size_t BaseController::GetMovementState() {
     return CurrentMovementState;
 }
-
 
 void BaseController::SetIsHeadingToNest(bool n)
 {
@@ -329,12 +347,12 @@ bool BaseController::CollisionDetection() {
 
         if(collisionAngle <= 0.0) 
 	  {
-	    //argos::LOG << collisionAngle << std::endl << collisionVector << std::endl << std::endl;
+	    argos::LOG << "collision 1: "<<collisionAngle << std::endl << collisionVector << std::endl << std::endl;
             SetLeftTurn(37.5 - collisionAngle);
 	  } 
 	else 
 	  {
-	    //argos::LOG << collisionAngle << std::endl << collisionVector << std::endl << std::endl;
+	    argos::LOG << "collision 2: "<< collisionAngle << std::endl << collisionVector << std::endl << std::endl;
             SetRightTurn(37.5 + collisionAngle);
 	  }
     }

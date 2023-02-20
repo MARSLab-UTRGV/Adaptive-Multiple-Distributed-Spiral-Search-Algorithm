@@ -29,16 +29,19 @@ class DSA_loop_functions : public argos::CLoopFunctions {
 
         void SetFoodDistribution();
         
-        //void calRegions(int num_regions); //qilu 12/2022
-        //void generatePattern(int N_circuits, int N_robots);
-		//int    calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
+        void calRegions(int num_regions); //qilu 12/2022
+        void generatePattern(int N_circuits, int N_robots);
+		int    calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
+        size_t NumOfRobots;
+        vector<vector<CVector2>> spiralPoints; //qilu 02/2023
+        vector<string> paths;
 		
 
 	argos::Real getSimTimeInSeconds();
 
 	protected:
 	
-	//size_t NumOfRobots;
+	
 
 	void setScore(double s);
 
@@ -102,16 +105,17 @@ class DSA_loop_functions : public argos::CLoopFunctions {
         bool IsOutOfBounds(argos::CVector2 p, size_t length, size_t width);
         bool IsCollidingWithNest(argos::CVector2 p);
         bool IsCollidingWithFood(argos::CVector2 p);
+        CVector2 CheckSpiralPoint(int idx_robot, CVector2 point);
 
 	double score;
 	int PrintFinalScore;
 	
-	//vector<CVector2>    centers; //qilu 2/2023
-     //   vector<CVector2>    topLeftPts; //qilu 2/2023
-      //  vector<CVector2>    bottomRightPts; //qilu 2/2023
-       // size_t NumberOfSpirals;
-       // size_t	RobotID; // start from 0 qilu 12/2022
-        // Real                SearcherGap;
+	vector<CVector2>    centers; //qilu 2/2023
+        vector<CVector2>    topLeftPts; //qilu 2/2023
+        vector<CVector2>    bottomRightPts; //qilu 2/2023
+        size_t NumberOfSpirals;
+       size_t	RobotID; // start from 0 qilu 12/2022
+         Real                SearcherGap;
         
 };
 

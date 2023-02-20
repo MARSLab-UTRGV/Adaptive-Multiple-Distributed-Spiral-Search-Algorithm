@@ -29,7 +29,7 @@ class DSA_controller : public BaseController {
         bool   IsInTheNest(); //qilu 02/2023
         void   GetPattern(string ith_Pattern, vector<CVector2> spiralPoints);
         void   SetRobotPath(string path);
-		void generatePattern(int N_circuits, int N_robots);
+		//void generatePattern(int N_circuits, int N_robots);
 		int    calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
         void calRegions(int num_regions); //qilu 12/2022
 		void   writePatternToFile(vector<char>&, int N_robots);
@@ -50,7 +50,7 @@ class DSA_controller : public BaseController {
         size_t NumberOfSpirals;
 
         /* Robot DSA state variable */
-        enum DSA { SEARCHING = 1, RETURN_TO_NEST = 2, RETURN_TO_SEARCH = 3, IDLE = 4 } DSA;
+        enum DSA { START = 0, SEARCHING = 1, RETURN_TO_NEST = 2, RETURN_TO_SEARCH = 3, IDLE = 4 } DSA;
 
         /* robot internal variables & statistics */
         CRandom::CRNG*      RNG;
@@ -65,13 +65,14 @@ class DSA_controller : public BaseController {
 	Real                ProbTargetDetection;
         Real                SearcherGap;
         Real                FoodDistanceTolerance;
+        Real                SquaredFoodDistanceTolerance;
        	CVector2            previous_position;
 	CVector2            previous_target;
 	CVector2            newTarget;
         CVector3            startPosition;
-        vector<CVector2>    centers; //qilu 12/2022
-        vector<CVector2>    topLeftPts; //qilu 2/2023
-        vector<CVector2>    bottomRightPts; //qilu 2/2023
+        //vector<CVector2>    centers; //qilu 12/2022
+        //vector<CVector2>    topLeftPts; //qilu 2/2023
+        //vector<CVector2>    bottomRightPts; //qilu 2/2023
         
         vector<char>        pattern;
         vector<CVector2>    spiral; //qilu 2/2023

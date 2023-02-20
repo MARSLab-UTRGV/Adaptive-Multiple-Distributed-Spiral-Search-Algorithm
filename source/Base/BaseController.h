@@ -40,7 +40,7 @@ class BaseController : public argos::CCI_Controller {
         argos::Real SimulationSecondsPerTick();
         argos::Real SimulationTimeInSeconds();
 
-	void SetIsHeadingToNest(bool n);
+        void SetIsHeadingToNest(bool n);
 
         bool IsAtTarget();
 
