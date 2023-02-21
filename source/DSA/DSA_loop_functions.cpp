@@ -41,7 +41,6 @@ CSimulator     *simulator     = &GetSimulator();
  argos::GetNodeAttribute(DDSA_node, "FoodDistribution",                  FoodDistribution);
  argos::GetNodeAttribute(DDSA_node, "FoodItemCount",                  FoodItemCount);
  argos::GetNodeAttribute(DDSA_node, "NestRadius",                 NestRadius);
- argos::GetNodeAttribute(DDSA_node, "NumberOfSpirals",         NumberOfSpirals);
  argos::GetNodeAttribute(DDSA_node, "SearcherGap",             SearcherGap);
    
  NestRadiusSquared = NestRadius*NestRadius;
@@ -51,8 +50,8 @@ CSimulator     *simulator     = &GetSimulator();
 	//The proximity range is 10cm (or 0.1m) qilu 12/2022 
 	
     argos::CVector3 ArenaSize = GetSpace().GetArenaSize();
-    argos::Real rangeX = ArenaSize.GetX() / 2.0 - 0.185;
-	argos::Real rangeY = ArenaSize.GetY() / 2.0 - 0.185;
+    argos::Real rangeX = ArenaSize.GetX() / 2.0;
+	argos::Real rangeY = ArenaSize.GetY() / 2.0;
 	
     ForageRangeX.Set(-rangeX, rangeX);
     ForageRangeY.Set(-rangeY, rangeY);
@@ -73,7 +72,7 @@ CSimulator     *simulator     = &GetSimulator();
 	//LOG<<"NumOfRobots="<< NumOfRobots <<endl;
     
     calRegions(4);
-    generatePattern(NumberOfSpirals, NumOfRobots);
+    generatePattern(NumOfRobots);
 	
 }
 
@@ -105,73 +104,103 @@ void DSA_loop_functions::calRegions(int num_regions)
 	
 }
 
-void DSA_loop_functions::generatePattern(int N_circuits, int N_robots) //Why is this function not in LoopFuction? qilu 2/2023
+void DSA_loop_functions::generatePattern(int N_robots) //Why is this function not in LoopFuction? qilu 2/2023
 {
-    string ith_robot_steps;
-    
 	vector<CVector2> pointVector;
 	CVector2 point;
 	argos::Real x, y;
     int n_steps_north, n_steps_east, n_steps_south, n_steps_west;
-    
+    int N_robot_per_region = 1;
     
     for (int i_robot = 0; i_robot < N_robots; i_robot++)
     {
-		ith_robot_steps +='O';
 		point = centers[i_robot];
         pointVector.push_back(point);
-                
-		for (int i_circuit = 1; i_circuit <= N_circuits; i_circuit++)
-        { 
-            n_steps_north = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'N');
+        
+        for(int i_circuit=1; i_circuit < 50; i_circuit++) //assume the max is 100        
+		{ 
+            n_steps_north = calcDistanceToTravel(i_robot, i_circuit, N_robot_per_region, 'N');
            
-            if(n_steps_north > 0)
-            {
-                x = point.GetX() + n_steps_north*SearcherGap;
-                y = point.GetY();
-                point = CVector2(x, y);
-                // check whether the point is out of the region qilu 02/2023
-                pointVector.push_back(point);
-                if(!CanGenerateSpiralPoint(i_robot, point)) break;
-            }    
+			while(n_steps_north >= 5)
+			{	
+				x = point.GetX() + 5*SearcherGap;
+				y = point.GetY();
+				point = CVector2(x, y);
+				pointVector.push_back(point);
+				n_steps_north -= 5;
+			}
+			if(n_steps_north > 0)
+			{
+				x = point.GetX() + n_steps_north*SearcherGap;
+				y = point.GetY();
+				point = CVector2(x, y);
+				pointVector.push_back(point);
+			} 
+            if(!CanGenerateSpiralPoint(i_robot, point)) break;
+                
  
         
-            n_steps_east = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'E');
-            if(n_steps_east > 0)
-            {
-                x = point.GetX();
-                y = point.GetY() - n_steps_east*SearcherGap; 
-                point = CVector2(x, y);
-               pointVector.push_back(point);
-               if(!CanGenerateSpiralPoint(i_robot, point)) break;
-             }
+            n_steps_east = calcDistanceToTravel(i_robot, i_circuit, N_robot_per_region, 'E');
+            while(n_steps_east >= 5)
+			{	
+				x = point.GetX();
+				y = point.GetY() - 5*SearcherGap;
+				point = CVector2(x, y);
+				pointVector.push_back(point);
+				n_steps_east -= 5;
+			}
+			if(n_steps_east > 0)
+			{
+				x = point.GetX();
+				y = point.GetY() - n_steps_east*SearcherGap;
+				point = CVector2(x, y);
+				pointVector.push_back(point);
+			} 
+            if(!CanGenerateSpiralPoint(i_robot, point)) break;
+             
             
-            n_steps_south = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'S');
+            n_steps_south = calcDistanceToTravel(i_robot, i_circuit, N_robot_per_region, 'S');
             
-            if(n_steps_south > 0)
-            {
-                x = point.GetX() - n_steps_south*SearcherGap;
-                y = point.GetY();
-                point = CVector2(x, y);
-                pointVector.push_back(point);
-               if(!CanGenerateSpiralPoint(i_robot, point)) break;
-            }
+            while(n_steps_south >= 5)
+			{	
+				x = point.GetX() - 5*SearcherGap;
+				y = point.GetY();
+				point = CVector2(x, y);
+				pointVector.push_back(point);
+				n_steps_south -= 5;
+			}
+			if(n_steps_south > 0)
+			{
+				x = point.GetX() - n_steps_south*SearcherGap;
+				y = point.GetY();
+				point = CVector2(x, y);
+				pointVector.push_back(point);
+			} 
+            if(!CanGenerateSpiralPoint(i_robot, point)) break;
             
-            n_steps_west = calcDistanceToTravel(i_robot, i_circuit, N_robots, 'W');
+            
+            
+            n_steps_west = calcDistanceToTravel(i_robot, i_circuit, N_robot_per_region, 'W');
            
-            if(n_steps_west > 0)
-            {
-                x = point.GetX();
-                y = point.GetY() + n_steps_west*SearcherGap;
-                point = CVector2(x, y);
-                pointVector.push_back(point);
-               if(!CanGenerateSpiralPoint(i_robot, point)) break;
-            }
-        }
-		paths.push_back(ith_robot_steps);
-        ith_robot_steps.clear();
+            while(n_steps_west >= 5)
+			{	
+				x = point.GetX();
+				y = point.GetY() + 5*SearcherGap;
+				point = CVector2(x, y);
+				pointVector.push_back(point);
+				n_steps_west -= 5;
+			}
+			if(n_steps_west > 0)
+			{
+				x = point.GetX();
+				y = point.GetY() + n_steps_west*SearcherGap;
+				point = CVector2(x, y);
+				pointVector.push_back(point);
+			} 
+            if(!CanGenerateSpiralPoint(i_robot, point)) break;
+            
+        } // end While
         
-        //LOG<<"pointVector size="<< pointVector.size()<<endl;
         spiralPoints.push_back(pointVector);
         pointVector.clear();
         
@@ -188,8 +217,6 @@ bool DSA_loop_functions::CanGenerateSpiralPoint(int idx_robot, CVector2 point)
     
 int DSA_loop_functions::calcDistanceToTravel(int ith_robot, int ith_circuit, int n_robots, char direction)
 {
-	
-    int Num_robots = 1; // one robot in each region qilu 12/2022
     ith_robot = 0; // qilu 2/2023 one robot in each region 
     
     int n_steps  = 0;
@@ -204,7 +231,7 @@ int DSA_loop_functions::calcDistanceToTravel(int ith_robot, int ith_circuit, int
         }
         else 
         {
-            n_steps = (2*ith_circuit -3)*Num_robots + 2*ith_robot;
+            n_steps = (2*ith_circuit -3)*n_robots + 2*ith_robot;
             return n_steps;
         }
     }
@@ -219,7 +246,7 @@ int DSA_loop_functions::calcDistanceToTravel(int ith_robot, int ith_circuit, int
 
         else
         {
-            n_steps = calcDistanceToTravel(ith_robot, ith_circuit, Num_robots, 'N') + Num_robots;
+            n_steps = calcDistanceToTravel(ith_robot, ith_circuit, n_robots, 'N') + n_robots;
             return n_steps;
         }
 

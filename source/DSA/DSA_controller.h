@@ -27,11 +27,9 @@ class DSA_controller : public BaseController {
 
         bool   IsHoldingFood();
         bool   IsInTheNest(); //qilu 02/2023
-        void   GetPattern(string ith_Pattern, vector<CVector2> spiralPoints);
-        void   SetRobotPath(string path);
-		//void generatePattern(int N_circuits, int N_robots);
-		int    calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
-        void calRegions(int num_regions); //qilu 12/2022
+        void   GetSpiralPath(vector<CVector2> spiralPoints);
+        int    calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
+        void   calRegions(int num_regions); //qilu 12/2022
 		void   writePatternToFile(vector<char>&, int N_robots);
 		void   addDirectionToPattern(char direction);
 		void   printPath(vector<char>&);

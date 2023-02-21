@@ -54,7 +54,7 @@ void DSA_controller::Init(TConfigurationNode& node) {
     string ID_number;
     LOG<<"Robot ID string= "<<ID<<endl;
       
-    for(size_t i=4; i< ID.size(); i++){
+    for(size_t i=1; i< ID.size(); i++){
       ID_number += ID[i];
     }
     RobotID = stoi(ID_number);
@@ -126,7 +126,7 @@ void DSA_controller::printPath(vector<char>& path)
     }
 }
 
-void DSA_controller::GetPattern(string ith_Pattern, vector<CVector2> spiralPoints)
+void DSA_controller::GetSpiralPath(vector<CVector2> spiralPoints)
 {
 	copy(spiralPoints.begin(),spiralPoints.end(),back_inserter(tempSpiralPoints));
     reverse(tempSpiralPoints.begin(), tempSpiralPoints.end());
@@ -147,7 +147,7 @@ void DSA_controller::ControlStep()
     if (DSA == START)
     {
         LOG<<"Start ....."<< endl;
-        GetPattern(loopFunctions->paths[RobotID], loopFunctions->spiralPoints[RobotID]);
+        GetSpiralPath(loopFunctions->spiralPoints[RobotID]);
         DSA = SEARCHING;
         }
 
@@ -174,24 +174,12 @@ void DSA_controller::ControlStep()
       SetHoldingFood();
       if (IsHoldingFood())
 	  {
-	    bool cpf = true; // why? qilu 12/2022
-	    if (cpf)
-	    {
-	      ReturnPosition = GetPosition();
-	      ReturnPatternPosition = GetTarget();
-	      DSA = RETURN_TO_NEST;
-	        SetIsHeadingToNest(true);
-	        SetTarget(loopFunctions->NestPosition);
-		     Stop(); //stop to reach the target location on the spiral path
-	    }
-	    else
-	    {
-			//LOG<<"Test ************, do we need this ?"<<endl;
-	      num_targets_collected++;
-	      loopFunctions->setScore(num_targets_collected);
-	      isHoldingFood = false;
-	    }
-	    return;
+	    ReturnPosition = GetPosition();
+	    ReturnPatternPosition = GetTarget();
+	    DSA = RETURN_TO_NEST;
+	    SetIsHeadingToNest(true);
+        SetTarget(loopFunctions->NestPosition);
+        Stop(); //stop to reach the target location on the spiral path  
 	  } 
       else // not holding food
 	  {
@@ -267,10 +255,7 @@ void DSA_controller::ControlStep()
 
    /* If the robot hit target and the patter size >0
        then find the next direction. */
-    //if(TargetHit() && tempPattern.size() > 0) {
-   //   /* Finds the last direction of the pattern. */
-   // direction_last = tempPattern[tempPattern.size() - 1]; 
-    
+ 
     if(TargetHit() && tempSpiralPoints.size() > 0) {
       /* Finds the last direction of the spiral. */
         spiral_last = tempSpiralPoints[tempSpiralPoints.size() - 1]; 
@@ -279,12 +264,10 @@ void DSA_controller::ControlStep()
         SetTarget(spiral_last);
 	    tempSpiralPoints.pop_back();
     }
-    
-    //else if(tempPattern.size() == 0 || tempSpiralPoints.size() == 0) 
-      else if(TargetHit() && tempSpiralPoints.size() == 0) 
-      {
+    else if(TargetHit() && tempSpiralPoints.size() == 0) 
+    {
         LOG<<"Robot "<< RobotID<< " complete the spiral search ***"<<endl;
-		DSA == IDLE;
+		DSA = IDLE;
 		SetIsHeadingToNest(false);
     	SetTarget(loopFunctions->centers[RobotID]);
       }

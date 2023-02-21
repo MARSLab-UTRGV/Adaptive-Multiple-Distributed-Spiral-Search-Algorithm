@@ -30,12 +30,10 @@ class DSA_loop_functions : public argos::CLoopFunctions {
         void SetFoodDistribution();
         
         void calRegions(int num_regions); //qilu 12/2022
-        void generatePattern(int N_circuits, int N_robots);
+        void generatePattern(int N_robots);
 		int    calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
         size_t NumOfRobots;
-        vector<vector<CVector2>> spiralPoints; //qilu 02/2023
-        vector<string> paths;
-		
+        vector<vector<CVector2>> spiralPoints; //qilu 02/2023	
 
 	argos::Real getSimTimeInSeconds();
 
