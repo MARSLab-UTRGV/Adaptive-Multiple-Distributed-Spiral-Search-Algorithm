@@ -29,11 +29,17 @@ class DSA_loop_functions : public argos::CLoopFunctions {
 
         void SetFoodDistribution();
         
-        void calRegions(int num_regions); //qilu 12/2022
-        void generatePattern(int N_robots);
-		int    calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
+        void calRegions(); //qilu 12/2022
+        void generateSpiralPath();
+		int  calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
         size_t NumOfRobots;
+        size_t NumOfRegions;
         vector<vector<CVector2>> spiralPoints; //qilu 02/2023	
+        CVector2 targetSpiralLocation;
+        vector<bool> shareFlag; //check whether the spiral is shared 
+        vector<bool> shareAssignUpdated;
+        vector<bool> singleAssignFlag;
+        vector<CVector2> currSpiralTarget;
 
 	argos::Real getSimTimeInSeconds();
 
@@ -103,12 +109,12 @@ class DSA_loop_functions : public argos::CLoopFunctions {
         bool IsOutOfBounds(argos::CVector2 p, size_t length, size_t width);
         bool IsCollidingWithNest(argos::CVector2 p);
         bool IsCollidingWithFood(argos::CVector2 p);
-        bool CanGenerateSpiralPoint(int idx_robot, CVector2 point);
+        bool canGenerateSpiralPoint(int idx_region, CVector2 point);
 
 	double score;
 	int PrintFinalScore;
 	
-	vector<CVector2>    centers; //qilu 2/2023
+	vector<CVector2>    regionCenters; //qilu 2/2023
         vector<CVector2>    topLeftPts; //qilu 2/2023
         vector<CVector2>    bottomRightPts; //qilu 2/2023
         size_t NumberOfSpirals;

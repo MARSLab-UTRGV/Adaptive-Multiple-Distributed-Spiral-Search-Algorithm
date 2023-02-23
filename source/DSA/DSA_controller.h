@@ -6,6 +6,7 @@
 //#include <source/Base/Region.h>
 /* Definition of the LEDs actuator */
 #include <argos3/plugins/robots/generic/control_interface/ci_leds_actuator.h>
+#include <cmath>
 
 using namespace argos;
 using namespace std;
@@ -27,9 +28,10 @@ class DSA_controller : public BaseController {
 
         bool   IsHoldingFood();
         bool   IsInTheNest(); //qilu 02/2023
-        void   GetSpiralPath(vector<CVector2> spiralPoints);
+        void   getSpiralPath(size_t regID);
+        void   shareSpiralPath();
         int    calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
-        void   calRegions(int num_regions); //qilu 12/2022
+        void   calRegions(); //qilu 12/2022
 		void   writePatternToFile(vector<char>&, int N_robots);
 		void   addDirectionToPattern(char direction);
 		void   printPath(vector<char>&);
@@ -43,6 +45,8 @@ class DSA_controller : public BaseController {
 		//Region region; //qilu 02/2023
 		string 	controllerID;
 		size_t	RobotID; // start from 0 qilu 12/2022
+		size_t  RegionID;
+		bool    firstAssigned;
 
         size_t NumberOfRobots;
         size_t NumberOfSpirals;
@@ -55,7 +59,7 @@ class DSA_controller : public BaseController {
         DSA_loop_functions* loopFunctions;
 
         CVector2            ReturnPosition;
-        CVector2            ReturnPatternPosition;
+        CVector2            ReturnSpiralPosition;
 
         vector<CRay3>       myTrail;
         CColor              TrailColor;
@@ -73,7 +77,7 @@ class DSA_controller : public BaseController {
         vector<CVector2>    spiral; //qilu 2/2023
         vector<char>        tempPattern;
         vector<string>      rPattern;
-        vector<CVector2>	tempSpiralPoints; //qilu 2/2023
+        vector<CVector2>	robotSpiralPoints; //qilu 2/2023
         int                 levels;
         bool                isHoldingFood;
         bool                goingHome;
@@ -83,7 +87,7 @@ class DSA_controller : public BaseController {
         size_t              stopTimeStep;
         size_t              collisionDelay;
 	    char 				direction_last;
-	    CVector2			spiral_last; //qilu 2/2023
+	    CVector2			nextSpiralPoint; //qilu 2/2023
 
         /* movement functions */
         CDegrees angleInDegrees;
@@ -93,6 +97,8 @@ class DSA_controller : public BaseController {
         void CopyPatterntoTemp();
         bool TargetHit();
         void SetHoldingFood(); 
+        bool shareSpiral();
+        void setShareSpiral();
 
 	string results_path;
 	string results_full_path;

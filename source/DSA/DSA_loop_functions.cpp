@@ -70,16 +70,16 @@ CSimulator     *simulator     = &GetSimulator();
 	SetFoodDistribution();
 	NumOfRobots = footbots.size();
 	//LOG<<"NumOfRobots="<< NumOfRobots <<endl;
-    
-    calRegions(4);
-    generatePattern(NumOfRobots);
+    NumOfRegions = 4;
+    calRegions();
+    generateSpiralPath();
 	
 }
 
 
-void DSA_loop_functions::calRegions(int num_regions)
+void DSA_loop_functions::calRegions()
 {
-	int num_rows = sqrt(num_regions);
+	int num_rows = sqrt(NumOfRegions);
 	int num_cols = num_rows;
 	
 	double_t unit = ForageRangeX.GetMax()/num_rows;
@@ -92,19 +92,18 @@ void DSA_loop_functions::calRegions(int num_regions)
 		for(int j =0; j < num_cols; j++)
 		{
 			location = CVector2(rangeMax-(2*i+1)*unit, rangeMax-(2*j+1)*unit);
-			centers.push_back(location);
-			LOG << "center["<<i<<","<<j<<"]="<<location<<endl;
+			regionCenters.push_back(location);
+			LOG << "region center["<<i<<","<<j<<"]="<<location<<endl;
 			pos = CVector2(location.GetX()+unit, location.GetY()+unit);
 			topLeftPts.push_back(pos);
 			pos = CVector2(location.GetX()-unit, location.GetY()-unit);
 			bottomRightPts.push_back(pos);
-			
 		}
 	}
 	
 }
 
-void DSA_loop_functions::generatePattern(int N_robots) //Why is this function not in LoopFuction? qilu 2/2023
+void DSA_loop_functions::generateSpiralPath()
 {
 	vector<CVector2> pointVector;
 	CVector2 point;
@@ -112,14 +111,14 @@ void DSA_loop_functions::generatePattern(int N_robots) //Why is this function no
     int n_steps_north, n_steps_east, n_steps_south, n_steps_west;
     int N_robot_per_region = 1;
     
-    for (int i_robot = 0; i_robot < N_robots; i_robot++)
+    for (int i_region = 0; i_region < NumOfRegions; i_region++)
     {
-		point = centers[i_robot];
+		point = regionCenters[i_region];
         pointVector.push_back(point);
         
-        for(int i_circuit=1; i_circuit < 50; i_circuit++) //assume the max is 100        
+        for(int i_circuit=1; i_circuit < 50; i_circuit++) //assume the max is 50        
 		{ 
-            n_steps_north = calcDistanceToTravel(i_robot, i_circuit, N_robot_per_region, 'N');
+            n_steps_north = calcDistanceToTravel(i_region, i_circuit, N_robot_per_region, 'N');
            
 			while(n_steps_north >= 5)
 			{	
@@ -136,11 +135,11 @@ void DSA_loop_functions::generatePattern(int N_robots) //Why is this function no
 				point = CVector2(x, y);
 				pointVector.push_back(point);
 			} 
-            if(!CanGenerateSpiralPoint(i_robot, point)) break;
+            if(!canGenerateSpiralPoint(i_region, point)) break;
                 
  
         
-            n_steps_east = calcDistanceToTravel(i_robot, i_circuit, N_robot_per_region, 'E');
+            n_steps_east = calcDistanceToTravel(i_region, i_circuit, N_robot_per_region, 'E');
             while(n_steps_east >= 5)
 			{	
 				x = point.GetX();
@@ -156,10 +155,10 @@ void DSA_loop_functions::generatePattern(int N_robots) //Why is this function no
 				point = CVector2(x, y);
 				pointVector.push_back(point);
 			} 
-            if(!CanGenerateSpiralPoint(i_robot, point)) break;
+            if(!canGenerateSpiralPoint(i_region, point)) break;
              
             
-            n_steps_south = calcDistanceToTravel(i_robot, i_circuit, N_robot_per_region, 'S');
+            n_steps_south = calcDistanceToTravel(i_region, i_circuit, N_robot_per_region, 'S');
             
             while(n_steps_south >= 5)
 			{	
@@ -176,11 +175,11 @@ void DSA_loop_functions::generatePattern(int N_robots) //Why is this function no
 				point = CVector2(x, y);
 				pointVector.push_back(point);
 			} 
-            if(!CanGenerateSpiralPoint(i_robot, point)) break;
+            if(!canGenerateSpiralPoint(i_region, point)) break;
             
             
             
-            n_steps_west = calcDistanceToTravel(i_robot, i_circuit, N_robot_per_region, 'W');
+            n_steps_west = calcDistanceToTravel(i_region, i_circuit, N_robot_per_region, 'W');
            
             while(n_steps_west >= 5)
 			{	
@@ -197,20 +196,29 @@ void DSA_loop_functions::generatePattern(int N_robots) //Why is this function no
 				point = CVector2(x, y);
 				pointVector.push_back(point);
 			} 
-            if(!CanGenerateSpiralPoint(i_robot, point)) break;
+            if(!canGenerateSpiralPoint(i_region, point)) break;
             
-        } // end While
-        
+        } //end of generating a path
+      
         spiralPoints.push_back(pointVector);
-        pointVector.clear();
+        pointVector.clear();   
         
+        shareFlag.push_back(false);
+        shareAssignUpdated.push_back(false);
+        singleAssignFlag.push_back(false);
+        currSpiralTarget.push_back(CVector2(0, 0));
     }
+   // for(int i=0; i< NumOfRobots; i++)
+   // {
+	//	}
+    // if(RobotID >= regionCenters.size())
+     //   {}
 }
 
-bool DSA_loop_functions::CanGenerateSpiralPoint(int idx_robot, CVector2 point)
+bool DSA_loop_functions::canGenerateSpiralPoint(int idx_region, CVector2 point)
 {
     //LOG<< "point.X = "<< point.GetX()<<", point.Y = "<< point.GetY()  << endl;
-    if((point.GetX()> topLeftPts[idx_robot].GetX() && point.GetY() > topLeftPts[idx_robot].GetY()) || (point.GetX()< bottomRightPts[idx_robot].GetX() && point.GetY() < bottomRightPts[idx_robot].GetY()) )
+    if((point.GetX()> topLeftPts[idx_region].GetX() && point.GetY() > topLeftPts[idx_region].GetY()) || (point.GetX()< bottomRightPts[idx_region].GetX() && point.GetY() < bottomRightPts[idx_region].GetY()) )
         return false;
     else return true;
 }
