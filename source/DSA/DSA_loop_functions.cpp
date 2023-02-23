@@ -208,11 +208,13 @@ void DSA_loop_functions::generateSpiralPath()
         singleAssignFlag.push_back(false);
         currSpiralTarget.push_back(CVector2(0, 0));
     }
-   // for(int i=0; i< NumOfRobots; i++)
-   // {
-	//	}
-    // if(RobotID >= regionCenters.size())
-     //   {}
+    for(int i=0; i< spiralPoints.size(); i++)
+    {
+        LOG<<"spiralPoints[" << i << "]="<<endl;
+        for(int j=0; j< spiralPoints[i].size(); j++)
+        LOG <<"["<<spiralPoints[i][j]<<"], ";
+        LOG<<endl;
+    }
 }
 
 bool DSA_loop_functions::canGenerateSpiralPoint(int idx_region, CVector2 point)
@@ -290,6 +292,7 @@ void DSA_loop_functions::PreStep()
 {
     sim_time++;
     //RegionList.clear(); //qilu 02/2023
+   
 }
 
 argos::Real DSA_loop_functions::getSimTimeInSeconds()

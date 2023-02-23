@@ -105,7 +105,7 @@ class DSA_loop_functions : public argos::CLoopFunctions {
         void RandomFoodDistribution();
         void ClusterFoodDistribution();
         void PowerLawFoodDistribution();
-	void FindClusterLengthWidth();
+	    void FindClusterLengthWidth();
         bool IsOutOfBounds(argos::CVector2 p, size_t length, size_t width);
         bool IsCollidingWithNest(argos::CVector2 p);
         bool IsCollidingWithFood(argos::CVector2 p);

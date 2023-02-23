@@ -138,39 +138,49 @@ void DSA_controller::shareSpiralPath()
 	{
 		if(loopFunctions->singleAssignFlag[i] == false)
 		{
+            LOG<<"1. Robot ID="<<RobotID<<endl;
+            LOG<<"region "<< i << "was not assigned ..." <<endl;
 			RegionID = i;
 			getSpiralPath(i);
 			firstAssigned = true;
 			loopFunctions->singleAssignFlag[i] = true;
 			return;
 		}
+        LOG <<"if region "<< i << " was assigned, remove visited points"<<endl;
 		num_points = loopFunctions->spiralPoints[i].size();
+        tempPath.clear();
 		for(int j= num_points-1; j >= 0; j--)
 		{
 			if(loopFunctions->spiralPoints[i][j] != loopFunctions->currSpiralTarget[i])
 			{
 				tempPath.push_back(loopFunctions->spiralPoints[i][j]);
+                //LOG<<"2. Robot ID="<<RobotID<<endl;
 			}
 			else
 			{
-				break;
+                LOG<<"loopFunctions->spiralPoints["<< i << "][" << j << "]=" <<loopFunctions->spiralPoints[i][j]<<endl;
+                break;
 			}
 		}
 		reverse(tempPath.begin(), tempPath.end());
+        loopFunctions->spiralPoints[i].clear();
 		copy(tempPath.begin(), tempPath.end(), back_inserter(loopFunctions->spiralPoints[i]));
-	}
+        tempPath.clear();
+	} //end of removing visited points
 		
 	for(int i=0; i < loopFunctions->shareFlag.size(); i++)
 	{
 		if (loopFunctions->shareFlag[i] == false && loopFunctions->spiralPoints[i].size() > 3) // the spiral path was not shared
 		{	
 			reg_idx = i;
+            LOG<<"3. Robot ID="<<RobotID<<endl;
 			break;
 			}
 	}
-	
+	LOG <<"region id = "<<reg_idx<<endl;
 	if(reg_idx == -1) //does not have paths for sharing
 	{
+        LOG<<"Robot "<<RobotID<< " goes to idle ..."<<endl;
 		DSA = IDLE;
 		return;
 		}
@@ -183,7 +193,7 @@ void DSA_controller::shareSpiralPath()
 			}
 	}
 	
-	LOG<<"loopFunctions->spiralPoints[" <<reg_idx<<"] size="<<loopFunctions->spiralPoints[reg_idx].size()<<endl;
+	LOG<<"longest loopFunctions->spiralPoints[" <<reg_idx<<"] size="<<loopFunctions->spiralPoints[reg_idx].size()<<endl;
 			
 	
 		midIdx = round(loopFunctions->spiralPoints[reg_idx].size()/2);
@@ -193,19 +203,21 @@ void DSA_controller::shareSpiralPath()
 		//copy(loopFunctions->spiralPoints[reg_idx].begin(),loopFunctions->spiralPoints[reg_idx].end(),back_inserter(robotSpiralPoints));
 		//reverse(robotSpiralPoints.begin(), robotSpiralPoints.end());
 		num_points = loopFunctions->spiralPoints[reg_idx].size();
-		LOG<<"midIdx="<<midIdx<< ", num_points="<< num_points <<endl;
-		
+		LOG<<"region id= "<<reg_idx<< ", midIdx="<<midIdx<< ", num_points="<< num_points <<endl;
+		LOG<<"4. Robot ID="<<RobotID<<endl;
+        robotSpiralPoints.clear();
 		for(int i= num_points - 1; i >= midIdx; i--)
 		{
 			robotSpiralPoints.push_back(loopFunctions->spiralPoints[reg_idx][i]);
 			loopFunctions->spiralPoints[reg_idx].pop_back();	
 		}
-		//reverse(robotSpiralPoints.begin(), robotSpiralPoints.end());
+		reverse(robotSpiralPoints.begin(), robotSpiralPoints.end());
 		
 			
 		LOG<<"loopFunctions->spiralPoints["<<reg_idx<< "] size="<<loopFunctions->spiralPoints[reg_idx].size()<<endl;
 		loopFunctions->shareFlag[reg_idx] = true;
 		loopFunctions->shareAssignUpdated[reg_idx] = false;
+        
 		
 }
 
@@ -235,7 +247,17 @@ void DSA_controller::ControlStep()
 			//idx = RobotID % loopFunctions->regionCenters.size();
 			//getSpiralPath();
 			shareSpiralPath();
-        
+       if(RobotID == 0 || RobotID == 4)
+        {
+            LOG<<"Robot ID ="<< RobotID<< ", path="<<endl;
+            for(int i=0; i<= robotSpiralPoints.size(); i++)
+            {
+                LOG<< "[" << robotSpiralPoints[i]<<"]";
+                }
+                LOG<< "" <<endl;
+            }
+            
+            
 			//getSpiralPath(RegionID);
         
         DSA = SEARCHING;
@@ -295,27 +317,50 @@ void DSA_controller::ControlStep()
 	      if(firstAssigned)
 	      {
 			  loopFunctions->currSpiralTarget[RegionID] = ReturnSpiralPosition;
-	      
+	         LOG<<"Robot ID ="<< RobotID<< ", ReturnSpiralPosition="<<ReturnSpiralPosition<< endl;
 		      // check whether the spiral path is shared or not.
-		      LOG<<"Robot ID ="<< RobotID<< "ReturnSpiralPosition="<<ReturnSpiralPosition<< endl;
-		      if(loopFunctions->shareAssignUpdated[RobotID] == false && loopFunctions->shareFlag[RobotID] == true)
+		      
+              LOG<< "RegionID = "<< RegionID<< endl;
+              LOG<< "loopFunctions->shareAssignUpdated[" << RegionID << "]="<<loopFunctions->shareAssignUpdated[RegionID]<<endl;
+              LOG<<"loopFunctions->shareFlag[" << RegionID << "]=" << loopFunctions->shareFlag[RegionID]<< endl;
+              
+		      if(loopFunctions->shareAssignUpdated[RegionID] == false && loopFunctions->shareFlag[RegionID])
 		      {
+                  LOG<<"share spiral ..."<<endl;
 				  vector<CVector2> tempPath;
 				  int len;
-				  copy(loopFunctions->spiralPoints[RobotID].begin(),loopFunctions->spiralPoints[RobotID].end(),back_inserter(tempPath));
+                  LOG<<"loopFunctions->spiralPoints["<< RegionID <<"]="<<endl;
+                  for(int i=0; i< loopFunctions->spiralPoints[RegionID].size(); i++)
+                  {
+                      LOG << "[" <<loopFunctions->spiralPoints[RegionID][i]<<"]";
+                      }
+                      LOG<<" "<<endl;
+				  copy(loopFunctions->spiralPoints[RegionID].begin(),loopFunctions->spiralPoints[RegionID].end(),back_inserter(tempPath));
 				  reverse(tempPath.begin(), tempPath.end());
 				  len = tempPath.size();
 				  for(int i= len-1; i >= 0; i--) // remove visited points
 				  {
-					  tempPath.pop_back();
+					  
 					  if(tempPath[i] != ReturnSpiralPosition)
 					  {
-						break;
+                          tempPath.pop_back();
+						
 					  }
+                      else
+                      {
+                          tempPath.pop_back();
+                          break;
+                          }
 				   }
+                  copy(tempPath.begin(),tempPath.end(),back_inserter(robotSpiralPoints));
+                  
 				  reverse(tempPath.begin(), tempPath.end());
-				  loopFunctions->spiralPoints[RobotID] = tempPath;
-				  getSpiralPath(RegionID); 
+                  //loopFunctions->spiralPoints[RobotID].clear();
+                  //copy(tempPath.begin(),tempPath.end(),back_inserter(loopFunctions->spiralPoints[RobotID]));
+                  tempPath.clear();
+                  
+				  //getSpiralPath(RegionID); 
+    
 				  loopFunctions->shareAssignUpdated[RobotID] = true;
 			  }
 	      }
