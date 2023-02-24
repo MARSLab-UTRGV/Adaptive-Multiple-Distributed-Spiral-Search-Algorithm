@@ -13,6 +13,7 @@ DSA_loop_functions::DSA_loop_functions() :
     DrawIDs(1),
     //DrawIDs(0),
     DrawTrails(0),
+    IdleCount(0),
     DrawTargetRays(0),
     FoodDistribution(1),
     FoodItemCount(256),
@@ -275,17 +276,20 @@ double DSA_loop_functions::Score()
 void DSA_loop_functions::setScore(double s)
 {
   score = s;
-  if (score >= FoodItemCount) 
+  //if (score >= FoodItemCount) 
+   if(IdleCount >= NumOfRobots*0.5)
     {
       PostExperiment();
-      exit(0); //when you debug your code, you may set the number of food to be 1 or 2. 
-               //This line will be hit and exit the simulation. You may think there is an issue in your code. qilu 2/2023 
-    }
+		exit(0); 
+	}
 }
 
 void DSA_loop_functions::PostExperiment() 
 {
-  if (PrintFinalScore == 1) printf("%f, %f\n", getSimTimeInSeconds(), score);
+  if (PrintFinalScore == 1) 
+  {		printf("Time in seconds, Collected, Distributed, Percentage\n");
+	  printf("%0.2lf, %d, %d, %0.2f\n", getSimTimeInSeconds(), (int)score, (int)FoodItemCount, score/FoodItemCount);
+  }
 }
 
 

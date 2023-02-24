@@ -34,6 +34,7 @@ class DSA_loop_functions : public argos::CLoopFunctions {
 		int  calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
         size_t NumOfRobots;
         size_t NumOfRegions;
+        int IdleCount;
         vector<vector<CVector2>> spiralPoints; //qilu 02/2023	
         CVector2 targetSpiralLocation;
         vector<bool> shareFlag; //check whether the spiral is shared 

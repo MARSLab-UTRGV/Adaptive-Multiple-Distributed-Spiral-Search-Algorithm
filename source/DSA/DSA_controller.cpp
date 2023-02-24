@@ -203,7 +203,7 @@ bool DSA_controller::shareSpiralPath()
 	LOG <<"initial region id = "<<RegionID<<endl;
 	if(RegionID == -1) //does not have paths for sharing
 	{
-        LOG<<"1. Robot "<<RobotID<< " goes to idle ..."<<endl;
+        //LOG<<"1. Robot "<<RobotID<< " goes to idle ..."<<endl;
 		return false;
 		}
 		
@@ -301,6 +301,7 @@ void DSA_controller::ControlStep()
 			LOG<<"Robot"<< RobotID << " set to be idle ..."<<endl;
 			LOG<<"RegionID="<< RegionID << ", PreRegionID="<<PreRegionID<< ", Location ="<<loopFunctions->regionCenters[PreRegionID]<<endl;
 			SetTarget(loopFunctions->regionCenters[PreRegionID]);
+			loopFunctions->IdleCount++;
 		}
       
         LOG<<"Robot ID ="<< RobotID<< ", path size="<< robotSpiralPoints.size()<<endl;
@@ -458,11 +459,13 @@ void DSA_controller::ControlStep()
   else if(DSA == IDLE)
   {
 	// just wait for a new assignment qilu 12/2022
-	LOG<<"Going to idle ..."<<endl;
+	//LOG<<"Going to idle ..."<<endl;
 	
       // Check if we reached the nest. If so record that we dropped food off and go back to the spiral
       if((GetPosition() - loopFunctions->regionCenters[PreRegionID]).SquareLength() < loopFunctions->NestRadiusSquared) 
-      { Stop(); }
+      { 
+		  Stop();
+		  }
   } 
   
   Move();

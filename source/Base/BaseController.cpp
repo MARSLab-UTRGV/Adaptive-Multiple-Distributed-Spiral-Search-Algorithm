@@ -31,8 +31,8 @@ BaseController::BaseController() :
     // calculate the forage range and compensate for the robot's radius of 0.085m
     //The proximity range is 10cm (or 0.1m) 
     argos::CVector3 ArenaSize = LF.GetSpace().GetArenaSize();
-    argos::Real rangeX = (ArenaSize.GetX() / 2.0) - 0.185;
-    argos::Real rangeY = (ArenaSize.GetY() / 2.0) - 0.185;
+    argos::Real rangeX = (ArenaSize.GetX() / 2.0) - 0.1;
+    argos::Real rangeY = (ArenaSize.GetY() / 2.0) - 0.1;
     ForageRangeX.Set(-rangeX, rangeX);
     ForageRangeY.Set(-rangeY, rangeY);
     GoStraightAngleRangeInDegrees.Set(-80, 80); 
