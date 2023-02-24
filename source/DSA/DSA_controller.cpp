@@ -146,6 +146,18 @@ bool DSA_controller::shareSpiralPath()
 	//remove visited points 
 	for(int i=0; i < NumOfRegions; i++)
 	{
+		
+		if(i >= NumberOfRobots && loopFunctions->singleAssignFlag[i] == false) // if the number of regions is greater than the number of robots, the regions with larger IDs may not be assigned.
+		{
+		RegionID = i;
+		getSpiralPath(RegionID);
+		firstAssigned = true;
+		loopFunctions->singleAssignFlag[RegionID] = true;
+		
+		return true;
+		}
+	
+	
         LOG<<"currSpiralTarget["<< i<< "]="<< loopFunctions->currSpiralTarget[i] <<endl;
 		num_points = loopFunctions->spiralPoints[i].size();
         tempPath.clear();
@@ -157,15 +169,15 @@ bool DSA_controller::shareSpiralPath()
         {
 			for(int j= num_points-1; j >= 0; j--)
 			{
-				//LOG<<"spiralPoints[" << i << "][" << j << "]= "<< loopFunctions->spiralPoints[i][j] << endl;
+				LOG<<"spiralPoints[" << i << "][" << j << "]= "<< loopFunctions->spiralPoints[i][j] << endl;
 				if(loopFunctions->spiralPoints[i][j] != loopFunctions->currSpiralTarget[i])
 				{
 				tempPath.push_back(loopFunctions->spiralPoints[i][j]);
-                //LOG<<"2. spiral point ="<<loopFunctions->spiralPoints[i][j]<< "robot id=" << RobotID<<endl;
+                LOG<<"2. spiral point ="<<loopFunctions->spiralPoints[i][j]<< "robot id=" << RobotID<<endl;
 				}
 				else
 				{
-                //LOG<<"*** spiralPoints["<< i << "][" << j << "]=" <<loopFunctions->spiralPoints[i][j]<<endl;
+                LOG<<"*** spiralPoints["<< i << "][" << j << "]=" <<loopFunctions->spiralPoints[i][j]<<endl;
                 break;
 				}
 			}
@@ -279,29 +291,26 @@ void DSA_controller::ControlStep()
         LOG<<"Start ....."<< endl;
         firstAssigned = false;
         NumOfRegions = loopFunctions->spiralPoints.size();
-			//idx = RobotID % loopFunctions->regionCenters.size();
-			//getSpiralPath();
-			if(shareSpiralPath())
-			{
-			    DSA = SEARCHING;
-			}
-			else
-			{
-				DSA = IDLE;
-				LOG<<"Robot"<< RobotID << " set to be idle ..."<<endl;
-				LOG<<"RegionID="<< RegionID << ", PreRegionID="<<PreRegionID<< ", Location ="<<loopFunctions->regionCenters[PreRegionID]<<endl;
-				SetTarget(loopFunctions->regionCenters[PreRegionID]);
-			}
+		if(shareSpiralPath())
+		{
+		    DSA = SEARCHING;
+		}
+		else
+		{
+			DSA = IDLE;
+			LOG<<"Robot"<< RobotID << " set to be idle ..."<<endl;
+			LOG<<"RegionID="<< RegionID << ", PreRegionID="<<PreRegionID<< ", Location ="<<loopFunctions->regionCenters[PreRegionID]<<endl;
+			SetTarget(loopFunctions->regionCenters[PreRegionID]);
+		}
       
-            LOG<<"Robot ID ="<< RobotID<< ", path size="<< robotSpiralPoints.size()<<endl;
-            LOG<<"robotSpiralPoints["<<RobotID<<"]="<<endl;
-            //for(int i=0; i< robotSpiralPoints.size(); i++)
-           // {
-           //     LOG<< "[" << robotSpiralPoints[i]<<"]";
-           // }
-           // LOG<< "" <<endl;
-        
+        LOG<<"Robot ID ="<< RobotID<< ", path size="<< robotSpiralPoints.size()<<endl;
+        LOG<<"robotSpiralPoints["<<RobotID<<"]="<<endl;
+        for(int i=0; i< robotSpiralPoints.size(); i++)
+        {
+            LOG<< "[" << robotSpiralPoints[i]<<"]";
         }
+        LOG<< "" <<endl;   
+    }
 
   // To draw paths
   if (DSA == SEARCHING)
@@ -355,11 +364,7 @@ void DSA_controller::ControlStep()
 	      
 	      // This is only for the robot which was first assigned to a region  
 	      if(firstAssigned && loopFunctions->shareAssignUpdated[RegionID] == false)
-	      {
-			  //loopFunctions->currSpiralTarget[RegionID] = ReturnSpiralPosition; //report the current spiral target location. Then, it can be used for spliting the path
-	         //LOG<<"Robot ID ="<< RobotID<< ", ReturnSpiralPosition="<<ReturnSpiralPosition<< endl;
-		      // check whether the spiral path is shared or not.
-		      
+	      {    
               LOG<< "RegionID = "<< RegionID<< endl;
               LOG<< "shareAssignUpdated[" << RegionID << "]="<<loopFunctions->shareAssignUpdated[RegionID]<<endl;
               LOG<<"shareFlag[" << RegionID << "]=" << loopFunctions->shareFlag[RegionID]<< endl;
