@@ -29,7 +29,7 @@ class DSA_controller : public BaseController {
         bool   IsHoldingFood();
         bool   IsInTheNest(); //qilu 02/2023
         void   getSpiralPath(size_t regID);
-        void   shareSpiralPath();
+        bool   shareSpiralPath();
         int    calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
         void   calRegions(); //qilu 12/2022
 		void   writePatternToFile(vector<char>&, int N_robots);
@@ -46,10 +46,12 @@ class DSA_controller : public BaseController {
 		string 	controllerID;
 		size_t	RobotID; // start from 0 qilu 12/2022
 		size_t  RegionID;
+		size_t  PreRegionID;
 		bool    firstAssigned;
 
         size_t NumberOfRobots;
         size_t NumberOfSpirals;
+        size_t NumOfRegions;
 
         /* Robot DSA state variable */
         enum DSA { START = 0, SEARCHING = 1, RETURN_TO_NEST = 2, RETURN_TO_SEARCH = 3, IDLE = 4 } DSA;

@@ -118,7 +118,7 @@ class DSA_loop_functions : public argos::CLoopFunctions {
         vector<CVector2>    topLeftPts; //qilu 2/2023
         vector<CVector2>    bottomRightPts; //qilu 2/2023
         size_t NumberOfSpirals;
-       size_t	RobotID; // start from 0 qilu 12/2022
+       //size_t	RobotID; // start from 0 qilu 12/2022
          Real                SearcherGap;
         
 };

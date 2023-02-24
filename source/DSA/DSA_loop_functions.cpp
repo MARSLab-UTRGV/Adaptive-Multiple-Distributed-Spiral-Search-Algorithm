@@ -42,6 +42,7 @@ CSimulator     *simulator     = &GetSimulator();
  argos::GetNodeAttribute(DDSA_node, "FoodItemCount",                  FoodItemCount);
  argos::GetNodeAttribute(DDSA_node, "NestRadius",                 NestRadius);
  argos::GetNodeAttribute(DDSA_node, "SearcherGap",             SearcherGap);
+ argos::GetNodeAttribute(DDSA_node, "NumOfRegions",             NumOfRegions);
    
  NestRadiusSquared = NestRadius*NestRadius;
 
@@ -70,7 +71,7 @@ CSimulator     *simulator     = &GetSimulator();
 	SetFoodDistribution();
 	NumOfRobots = footbots.size();
 	//LOG<<"NumOfRobots="<< NumOfRobots <<endl;
-    NumOfRegions = 4;
+    //NumOfRegions = 16; 
     calRegions();
     generateSpiralPath();
 	
@@ -120,13 +121,13 @@ void DSA_loop_functions::generateSpiralPath()
 		{ 
             n_steps_north = calcDistanceToTravel(i_region, i_circuit, N_robot_per_region, 'N');
            
-			while(n_steps_north >= 5)
+			while(n_steps_north >= 3) //create a point in every 3 searchGap
 			{	
-				x = point.GetX() + 5*SearcherGap;
+				x = point.GetX() + 3*SearcherGap;
 				y = point.GetY();
 				point = CVector2(x, y);
 				pointVector.push_back(point);
-				n_steps_north -= 5;
+				n_steps_north -= 3;
 			}
 			if(n_steps_north > 0)
 			{
@@ -140,13 +141,13 @@ void DSA_loop_functions::generateSpiralPath()
  
         
             n_steps_east = calcDistanceToTravel(i_region, i_circuit, N_robot_per_region, 'E');
-            while(n_steps_east >= 5)
+            while(n_steps_east >= 3)
 			{	
 				x = point.GetX();
-				y = point.GetY() - 5*SearcherGap;
+				y = point.GetY() - 3*SearcherGap;
 				point = CVector2(x, y);
 				pointVector.push_back(point);
-				n_steps_east -= 5;
+				n_steps_east -= 3;
 			}
 			if(n_steps_east > 0)
 			{
@@ -160,13 +161,13 @@ void DSA_loop_functions::generateSpiralPath()
             
             n_steps_south = calcDistanceToTravel(i_region, i_circuit, N_robot_per_region, 'S');
             
-            while(n_steps_south >= 5)
+            while(n_steps_south >= 3)
 			{	
-				x = point.GetX() - 5*SearcherGap;
+				x = point.GetX() - 3*SearcherGap;
 				y = point.GetY();
 				point = CVector2(x, y);
 				pointVector.push_back(point);
-				n_steps_south -= 5;
+				n_steps_south -= 3;
 			}
 			if(n_steps_south > 0)
 			{
@@ -181,13 +182,13 @@ void DSA_loop_functions::generateSpiralPath()
             
             n_steps_west = calcDistanceToTravel(i_region, i_circuit, N_robot_per_region, 'W');
            
-            while(n_steps_west >= 5)
+            while(n_steps_west >= 3)
 			{	
 				x = point.GetX();
-				y = point.GetY() + 5*SearcherGap;
+				y = point.GetY() + 3*SearcherGap;
 				point = CVector2(x, y);
 				pointVector.push_back(point);
-				n_steps_west -= 5;
+				n_steps_west -= 3;
 			}
 			if(n_steps_west > 0)
 			{
@@ -204,7 +205,7 @@ void DSA_loop_functions::generateSpiralPath()
         pointVector.clear();   
         
         shareFlag.push_back(false);
-        shareAssignUpdated.push_back(false);
+        shareAssignUpdated.push_back(true); //do not allow updates at the beginning
         singleAssignFlag.push_back(false);
         currSpiralTarget.push_back(CVector2(0, 0));
     }
