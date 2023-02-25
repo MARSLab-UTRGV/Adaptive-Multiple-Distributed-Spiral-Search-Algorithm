@@ -276,19 +276,14 @@ double DSA_loop_functions::Score()
 void DSA_loop_functions::setScore(double s)
 {
   score = s;
-  //if (score >= FoodItemCount) 
-   if(IdleCount >= NumOfRobots*0.5)
-    {
-      PostExperiment();
-		exit(0); 
-	}
+	
 }
 
 void DSA_loop_functions::PostExperiment() 
 {
   if (PrintFinalScore == 1) 
   {		printf("Time in seconds, Collected, Distributed, Percentage\n");
-	  printf("%0.2lf, %d, %d, %0.2f\n", getSimTimeInSeconds(), (int)score, (int)FoodItemCount, score/FoodItemCount);
+	  printf("%0.2lf, %d, %d, %0.1f\%\n", getSimTimeInSeconds(), (int)score, (int)FoodItemCount, 100*score/FoodItemCount);
   }
 }
 
@@ -297,6 +292,11 @@ void DSA_loop_functions::PreStep()
 {
     sim_time++;
     //RegionList.clear(); //qilu 02/2023
+    if(IdleCount >= NumOfRobots*0.5)
+    {
+      PostExperiment();
+		exit(0); 
+	}
    
 }
 

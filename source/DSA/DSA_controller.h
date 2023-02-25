@@ -99,9 +99,7 @@ class DSA_controller : public BaseController {
         void CopyPatterntoTemp();
         bool TargetHit();
         void SetHoldingFood(); 
-        bool shareSpiral();
-        void setShareSpiral();
-
+        
 	string results_path;
 	string results_full_path;
 		/* Pointer to the LEDs actuator */
