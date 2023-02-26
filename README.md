@@ -1,1 +1,1 @@
-# Distributed-Deterministic-Spiral-Search
+# Adaptive Multiple-Distributed Spiral Algorithm
