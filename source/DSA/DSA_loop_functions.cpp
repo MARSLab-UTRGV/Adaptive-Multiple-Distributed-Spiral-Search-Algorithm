@@ -25,6 +25,8 @@ DSA_loop_functions::DSA_loop_functions() :
     FoodRadiusSquared(0.0025),
     NestRadius(0.25),
     NestRadiusSquared(0.0625),
+    RegionRadius(0.25),
+    RegionRadiusSquared(0.0625),
     NestElevation(0.01),
   SearchRadiusSquared((4.0 * FoodRadius) * (4.0 * FoodRadius)),
   ticks_per_second(0),
@@ -34,19 +36,20 @@ DSA_loop_functions::DSA_loop_functions() :
 {}
 
 void DSA_loop_functions::Init(TConfigurationNode& node) {
-CSimulator     *simulator     = &GetSimulator();
-  CPhysicsEngine *physicsEngine = &simulator->GetPhysicsEngine("dyn2d");
-  ticks_per_second = physicsEngine->GetInverseSimulationClockTick();
- argos::TConfigurationNode DDSA_node = argos::GetNode(node, "DDSA");
- argos::GetNodeAttribute(DDSA_node, "PrintFinalScore",                   PrintFinalScore);
- argos::GetNodeAttribute(DDSA_node, "FoodDistribution",                  FoodDistribution);
- argos::GetNodeAttribute(DDSA_node, "FoodItemCount",                  FoodItemCount);
- argos::GetNodeAttribute(DDSA_node, "NestRadius",                 NestRadius);
- argos::GetNodeAttribute(DDSA_node, "SearcherGap",             SearcherGap);
- argos::GetNodeAttribute(DDSA_node, "NumOfRegions",             NumOfRegions);
+	CSimulator     *simulator     = &GetSimulator();
+	CPhysicsEngine *physicsEngine = &simulator->GetPhysicsEngine("dyn2d");
+	ticks_per_second = physicsEngine->GetInverseSimulationClockTick();
+	argos::TConfigurationNode DDSA_node = argos::GetNode(node, "DDSA");
+	argos::GetNodeAttribute(DDSA_node, "PrintFinalScore",     PrintFinalScore);
+	argos::GetNodeAttribute(DDSA_node, "FoodDistribution",    FoodDistribution);
+	argos::GetNodeAttribute(DDSA_node, "FoodItemCount",       FoodItemCount);
+	argos::GetNodeAttribute(DDSA_node, "NestRadius",          NestRadius);
+	argos::GetNodeAttribute(DDSA_node, "RegionRadius",        RegionRadius);
+	argos::GetNodeAttribute(DDSA_node, "SearcherGap",         SearcherGap);
+	argos::GetNodeAttribute(DDSA_node, "NumOfRegions",        NumOfRegions);
    
- NestRadiusSquared = NestRadius*NestRadius;
-
+	NestRadiusSquared = NestRadius*NestRadius;
+	RegionRadiusSquared = RegionRadius*RegionRadius;
     //Calculate the forage range 
     //The robot's radius is 0.085m
 	//The proximity range is 10cm (or 0.1m) qilu 12/2022 
@@ -71,8 +74,6 @@ CSimulator     *simulator     = &GetSimulator();
     
 	SetFoodDistribution();
 	NumOfRobots = footbots.size();
-	//LOG<<"NumOfRobots="<< NumOfRobots <<endl;
-    //NumOfRegions = 16; 
     calRegions();
     generateSpiralPath();
 	
@@ -93,13 +94,13 @@ void DSA_loop_functions::calRegions()
 	{
 		for(int j =0; j < num_cols; j++)
 		{
-			location = CVector2(rangeMax-(2*i+1)*unit, rangeMax-(2*j+1)*unit);
-			regionCenters.push_back(location);
-			LOG << "region center["<<i<<","<<j<<"]="<<location<<endl;
-			pos = CVector2(location.GetX()+unit, location.GetY()+unit);
-			topLeftPts.push_back(pos);
-			pos = CVector2(location.GetX()-unit, location.GetY()-unit);
-			bottomRightPts.push_back(pos);
+		location = CVector2(rangeMax-(2*i+1)*unit, rangeMax-(2*j+1)*unit);
+		regionCenters.push_back(location);
+		LOG << "region center["<<i<<","<<j<<"]="<<location<<endl;
+		pos = CVector2(location.GetX()+unit, location.GetY()+unit);
+		topLeftPts.push_back(pos);
+		pos = CVector2(location.GetX()-unit, location.GetY()-unit);
+		bottomRightPts.push_back(pos);
 		}
 	}
 	
@@ -210,18 +211,17 @@ void DSA_loop_functions::generateSpiralPath()
         singleAssignFlag.push_back(false);
         currSpiralTarget.push_back(CVector2(0, 0));
     }
-    for(int i=0; i< spiralPoints.size(); i++)
+    /*for(int i=0; i< spiralPoints.size(); i++)
     {
         LOG<<"spiralPoints[" << i << "]="<<endl;
         for(int j=0; j< spiralPoints[i].size(); j++)
         LOG <<"["<<spiralPoints[i][j]<<"], ";
         LOG<<endl;
-    }
+    }*/
 }
 
 bool DSA_loop_functions::canGenerateSpiralPoint(int idx_region, CVector2 point)
 {
-    //LOG<< "point.X = "<< point.GetX()<<", point.Y = "<< point.GetY()  << endl;
     if((point.GetX()> topLeftPts[idx_region].GetX() && point.GetY() > topLeftPts[idx_region].GetY()) || (point.GetX()< bottomRightPts[idx_region].GetX() && point.GetY() < bottomRightPts[idx_region].GetY()) )
         return false;
     else return true;
@@ -261,7 +261,6 @@ int DSA_loop_functions::calcDistanceToTravel(int ith_robot, int ith_circuit, int
             n_steps = calcDistanceToTravel(ith_robot, ith_circuit, n_robots, 'N') + n_robots;
             return n_steps;
         }
-
     }  
     
     return 0;
@@ -282,8 +281,8 @@ void DSA_loop_functions::setScore(double s)
 void DSA_loop_functions::PostExperiment() 
 {
   if (PrintFinalScore == 1) 
-  {		printf("Time in seconds, Collected, Distributed, Percentage\n");
-	  printf("%0.2lf, %d, %d, %0.1f\%\n", getSimTimeInSeconds(), (int)score, (int)FoodItemCount, 100*score/FoodItemCount);
+  {		printf("Time(s), Collected, Total, Percentage\n");
+	  printf("%0.2lf, \t %d, \t %d, \t %0.1f\%\n", getSimTimeInSeconds(), (int)score, (int)FoodItemCount, 100*score/FoodItemCount);
   }
 }
 
@@ -291,8 +290,7 @@ void DSA_loop_functions::PostExperiment()
 void DSA_loop_functions::PreStep() 
 {
     sim_time++;
-    //RegionList.clear(); //qilu 02/2023
-    if(IdleCount >= NumOfRobots*0.5)
+    if(IdleCount >= NumOfRobots)
     {
       PostExperiment();
 		exit(0); 

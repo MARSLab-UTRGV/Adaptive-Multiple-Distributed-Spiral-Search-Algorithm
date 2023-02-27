@@ -28,8 +28,9 @@ class DSA_controller : public BaseController {
 
         bool   IsHoldingFood();
         bool   IsInTheNest(); //qilu 02/2023
+        bool   IsInTheRegion();
         void   getSpiralPath(size_t regID);
-        bool   shareSpiralPath();
+        bool   GetSpiralPath();
         int    calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
         void   calRegions(); //qilu 12/2022
 		void   writePatternToFile(vector<char>&, int N_robots);
@@ -54,7 +55,7 @@ class DSA_controller : public BaseController {
         size_t NumOfRegions;
 
         /* Robot DSA state variable */
-        enum DSA { START = 0, SEARCHING = 1, RETURN_TO_NEST = 2, RETURN_TO_SEARCH = 3, IDLE = 4 } DSA;
+        enum DSA { START = 0, SEARCHING = 1, RETURN_TO_REGION = 2, RETURN_TO_SEARCH = 3, IDLE = 4 } DSA;
 
         /* robot internal variables & statistics */
         CRandom::CRNG*      RNG;
@@ -66,13 +67,13 @@ class DSA_controller : public BaseController {
         vector<CRay3>       myTrail;
         CColor              TrailColor;
 
-	Real                ProbTargetDetection;
+		Real                ProbTargetDetection;
         Real                SearcherGap;
         Real                FoodDistanceTolerance;
         Real                SquaredFoodDistanceTolerance;
        	CVector2            previous_position;
-	CVector2            previous_target;
-	CVector2            newTarget;
+		CVector2            previous_target;
+		CVector2            newTarget;
         CVector3            startPosition;
         
         vector<char>        pattern;

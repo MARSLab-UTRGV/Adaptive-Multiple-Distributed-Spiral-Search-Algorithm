@@ -79,14 +79,11 @@ class DSA_loop_functions : public argos::CLoopFunctions {
         argos::Real FoodRadiusSquared;
         argos::Real NestRadius;
         argos::Real NestRadiusSquared;
+        argos::Real RegionRadius;
+        argos::Real RegionRadiusSquared;
+        
         argos::Real NestElevation;
         argos::Real SearchRadiusSquared;
-
-	argos::Real FoodBoundsWidth;
-	argos::Real FoodBoundsHeight;
-	/* regions qilu 02/2023*/
-	//std::vector<Region>   RegionList; 
-	
 	
         /* list variables for food */
         std::vector<argos::CVector2> FoodList;
