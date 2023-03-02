@@ -77,13 +77,13 @@ void DSA_qt_user_functions::DrawNest() {
     /* Draw the nest on the arena. */
     DrawCircle(nest_3d, CQuaternion(), loopFunctions.NestRadius, CColor::RED);
     
-    for(int i=0; i< loopFunctions.regionCenters.size(); i++)
+    /*for(int i=0; i< loopFunctions.regionCenters.size(); i++)
     {
 		x_coordinate = loopFunctions.regionCenters[i].GetX();
         y_coordinate = loopFunctions.regionCenters[i].GetY();
 		CVector3 region (x_coordinate, y_coordinate, elevation);
 		DrawCircle(region, CQuaternion(), loopFunctions.RegionRadius, CColor::GRAY50);
-	}
+	}*/
 }
 
 /*****

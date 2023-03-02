@@ -28,7 +28,6 @@ class DSA_controller : public BaseController {
 
         bool   IsHoldingFood();
         bool   IsInTheNest(); //qilu 02/2023
-        bool   IsInTheRegion();
         void   getSpiralPath(size_t regID);
         bool   GetSpiralPath();
         int    calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
@@ -55,7 +54,7 @@ class DSA_controller : public BaseController {
         size_t NumOfRegions;
 
         /* Robot DSA state variable */
-        enum DSA { START = 0, SEARCHING = 1, RETURN_TO_REGION = 2, RETURN_TO_SEARCH = 3, IDLE = 4 } DSA;
+        enum DSA { START = 0, SEARCHING = 1, RETURN_TO_CENTER = 2, RETURN_TO_SEARCH = 3, IDLE = 4 } DSA;
 
         /* robot internal variables & statistics */
         CRandom::CRNG*      RNG;

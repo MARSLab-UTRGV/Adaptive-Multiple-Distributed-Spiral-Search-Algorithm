@@ -111,12 +111,6 @@ void DSA_controller::Init(TConfigurationNode& node) {
 bool DSA_controller::IsInTheNest() {
 	return ((GetPosition() - loopFunctions->NestPosition).SquareLength() < loopFunctions->NestRadiusSquared);
 	}
-
-
-bool DSA_controller::IsInTheRegion() {
-	return ((GetPosition() - loopFunctions->regionCenters[RegionID]).SquareLength() < loopFunctions->RegionRadiusSquared);
-	}
-	
 	
 void DSA_controller::printPath(vector<char>& path)
 {
@@ -312,11 +306,11 @@ void DSA_controller::ControlStep()
 	  {
 	    ReturnPosition = GetPosition();
 	    ReturnSpiralPosition = GetTarget();
-	    DSA = RETURN_TO_REGION;
+	    DSA = RETURN_TO_CENTER;
 	    SetIsHeadingToNest(true);
-        //SetTarget(loopFunctions->NestPosition);
+        SetTarget(loopFunctions->NestPosition);
         //LOG<<"RobotID=" << RobotID<<", RegionID="<<RegionID<<endl;
-        SetTarget(loopFunctions->regionCenters[RegionID]);
+        //SetTarget(loopFunctions->regionCenters[RegionID]);
         Stop(); //stop to reach the target location on the spiral path  
 	  } 
       else // not holding food
@@ -325,12 +319,12 @@ void DSA_controller::ControlStep()
         //LOG<<"ReachSpiralTargets ***"<<endl;
 	  }
   } 
-  else if( DSA == RETURN_TO_REGION) 
+  else if( DSA == RETURN_TO_CENTER) 
   {
-      //argos::LOG << "RETURN_TO_REGION" << std::endl;
+      //argos::LOG << "RETURN_TO_CENTER" << std::endl;
       SetIsHeadingToNest(true);
 	  // Check if we reached the nest. If so record that we dropped food off and go back to the spiral
-      if(IsInTheRegion()) 
+      if(IsInTheNest()) 
       {
 	    if (isHoldingFood)
 	    {	
@@ -403,7 +397,7 @@ void DSA_controller::ControlStep()
 	//LOG<<"Going to idle ..."<<endl;
 	
       // Check if we reached the nest. If so record that we dropped food off and go back to the spiral
-      if((GetPosition() - loopFunctions->regionCenters[PreRegionID]).SquareLength() < loopFunctions->NestRadiusSquared) 
+      if((GetPosition() - loopFunctions->regionCenters[PreRegionID]).SquareLength() < loopFunctions->RegionRadiusSquared) 
       { 
 		Stop();
 		}
