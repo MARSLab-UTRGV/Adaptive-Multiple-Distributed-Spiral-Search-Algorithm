@@ -74,6 +74,11 @@ class DSA_loop_functions : public argos::CLoopFunctions {
 
 		CVector2 NestPosition;
 
+        string FilenameHeader;
+        Real CollisionTime;
+        vector<size_t> foodPerMinute;
+        // size_t numCollisions;
+
         /* physical robot & world variables */
         argos::Real FoodRadius;
         argos::Real FoodRadiusSquared;

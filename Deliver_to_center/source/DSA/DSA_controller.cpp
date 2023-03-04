@@ -12,7 +12,8 @@ DSA_controller::DSA_controller():
     ResetReturnPosition(true),
     stopTimeStep(0),
     m_pcLEDs(NULL),
-    isHoldingFood(false)
+    isHoldingFood(false),
+    num_targets_per_min(0)
 	{}
 
 /*****
@@ -328,9 +329,16 @@ void DSA_controller::ControlStep()
       {
 	    if (isHoldingFood)
 	    {	
-			//argos::LOG << "Holding food and drop it" << std::endl;
-			num_targets_collected++;
-			loopFunctions->setScore(num_targets_collected);
+        //argos::LOG << "Holding food and drop it" << std::endl;
+        num_targets_collected++;
+        num_targets_per_min++;
+        loopFunctions->setScore(num_targets_collected);
+        
+        // Get num food collected each minute
+        if (loopFunctions->getSimTimeInSeconds()%60 == 0){
+            loopFunctions->foodPerMinute.push(num_targets_per_min++)
+            num_targets_per_min = 0;
+        }
 	      
 			// This is only for the robot which was first assigned to a region  
 			if(firstAssigned && loopFunctions->shareAssignUpdated[RegionID] == false)
@@ -494,14 +502,4 @@ bool DSA_controller::IsHoldingFood() {
 }
 /*****
  * After pressing the reset button in the GUI, this controller will be set to
- * default factory settings like at the start of a simulation.
- *****/
-void DSA_controller::Reset() {
-    collisionDelay  = 0;
-    SetIsHeadingToNest(true);
-    SetTarget(loopFunctions->NestPosition);
-    CopyPatterntoTemp();
-    
-}
-
-REGISTER_CONTROLLER(DSA_controller, "DSA_controller")
+ * default factory set

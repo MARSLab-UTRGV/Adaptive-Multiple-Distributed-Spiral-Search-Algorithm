@@ -74,6 +74,8 @@ class DSA_controller : public BaseController {
 		CVector2            previous_target;
 		CVector2            newTarget;
         CVector3            startPosition;
+
+        size_t              num_targets_per_min;
         
         vector<char>        pattern;
         vector<CVector2>    spiral; //qilu 2/2023
