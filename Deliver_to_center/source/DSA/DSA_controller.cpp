@@ -335,8 +335,8 @@ void DSA_controller::ControlStep()
         loopFunctions->setScore(num_targets_collected);
         
         // Get num food collected each minute
-        if (loopFunctions->getSimTimeInSeconds()%60 == 0){
-            loopFunctions->foodPerMinute.push(num_targets_per_min++)
+        if (int(loopFunctions->getSimTimeInSeconds())%60 == 0){
+            loopFunctions->foodPerMinute.push_back(num_targets_per_min++);
             num_targets_per_min = 0;
         }
 	      
@@ -502,4 +502,14 @@ bool DSA_controller::IsHoldingFood() {
 }
 /*****
  * After pressing the reset button in the GUI, this controller will be set to
- * default factory set
+ * default factory settings like at the start of a simulation.
+ *****/
+void DSA_controller::Reset() {
+    collisionDelay  = 0;
+    SetIsHeadingToNest(true);
+    SetTarget(loopFunctions->NestPosition);
+    CopyPatterntoTemp();
+    
+}
+
+REGISTER_CONTROLLER(DSA_controller, "DSA_controller")

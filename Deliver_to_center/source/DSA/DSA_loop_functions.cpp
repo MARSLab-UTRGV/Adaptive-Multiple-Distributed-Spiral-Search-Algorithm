@@ -34,7 +34,7 @@ DSA_loop_functions::DSA_loop_functions() :
     score(0),
     PrintFinalScore(0),
     FilenameHeader("\0"),
-    CollisionTime(0),
+    CollisionTime(0)
 {}
 
 void DSA_loop_functions::Init(TConfigurationNode& node) {
@@ -283,11 +283,11 @@ void DSA_loop_functions::setScore(double s)
 
 void DSA_loop_functions::PostExperiment() 
 {
-    if (PrintFinalScore == 1) 
-    {		printf("Time(s), Collected, Total, Percentage\n");
-        printf("%0.2lf, \t %d, \t %d, \t %0.1f\%\n", getSimTimeInSeconds(), (int)score, (int)FoodItemCount, 100*score/FoodItemCount);
-    }
-
+    // if (PrintFinalScore == 1) 
+    // {		printf("Time(s), Collected, Total, Percentage\n");
+    //     printf("%0.2lf, \t %d, \t %d, \t %0.1f\%\n", getSimTimeInSeconds(), (int)score, (int)FoodItemCount, 100*score/FoodItemCount);
+    // }
+    argos::CSpace::TMapPerType& footbots = GetSpace().GetEntitiesByType("foot-bot");
     for(argos::CSpace::TMapPerType::iterator it = footbots.begin(); it != footbots.end(); it++) {
         argos::CFootBotEntity& footBot = *argos::any_cast<argos::CFootBotEntity*>(it->second);
         BaseController& c = dynamic_cast<BaseController&>(footBot.GetControllableEntity().GetController());
@@ -295,13 +295,23 @@ void DSA_loop_functions::PostExperiment()
         CollisionTime += c2.GetCollisionTime();
     }
 
-
     ofstream DataOut((FilenameHeader+"MDSA-D-Data.txt").c_str(), ios::app);
     if (DataOut.tellp()==0){
 
         DataOut << "Sim Time(s), Food Collected, Total Food in Simulation, Percentage of Total Collected, Collision Time in Seconds\n";
         DataOut << getSimTimeInSeconds() << "," << (int)score << "," << (int)FoodItemCount << "," << 100*score/FoodItemCount << "," << CollisionTime/(2*ticks_per_second) << endl;
 
+    }
+
+    size_t tmp = 0;
+
+    for (size_t fpm : foodPerMinute){
+        tmp += fpm;
+    }
+
+    if (tmp > (int)FoodItemCount){
+        LOGERR << "Total number of collected food items > number of items in the simulation..." << endl;
+        LOGERR << "Number of collected food: " << tmp << ", Number of food in simulation: " << (int)FoodItemCount << endl;
     }
 
     // the food collected in the remaining simulation time is discarded if the remaining simulation time < 60 seconds (1 minute)
