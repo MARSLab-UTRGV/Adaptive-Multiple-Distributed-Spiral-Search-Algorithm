@@ -49,6 +49,7 @@ void DSA_loop_functions::Init(TConfigurationNode& node) {
 	argos::GetNodeAttribute(DDSA_node, "RegionRadius",        RegionRadius);
 	argos::GetNodeAttribute(DDSA_node, "SearcherGap",         SearcherGap);
 	argos::GetNodeAttribute(DDSA_node, "NumOfRegions",        NumOfRegions);
+    argos::GetNodeAttribute(DDSA_node, "FilenameHeader",        FilenameHeader);
    
 	NestRadiusSquared = NestRadius*NestRadius;
 	RegionRadiusSquared = RegionRadius*RegionRadius;
@@ -295,7 +296,7 @@ void DSA_loop_functions::PostExperiment()
         CollisionTime += c2.GetCollisionTime();
     }
 
-    ofstream DataOut((FilenameHeader+"MDSA-C-Data.txt").c_str(), ios::app);
+    ofstream DataOut((FilenameHeader+"MDSA-D-Data.txt").c_str(), ios::app);
     if (DataOut.tellp()==0){
 
         DataOut << "Sim Time(s), Food Collected, Total Food in Simulation, Percentage of Total Collected, Collision Time in Seconds\n";
@@ -315,7 +316,7 @@ void DSA_loop_functions::PostExperiment()
     }
 
     // the food collected in the remaining simulation time is discarded if the remaining simulation time < 60 seconds (1 minute)
-    ofstream DataOut2((FilenameHeader+"MDSA-C-TargetsPerMin.txt").c_str(), ios::app);
+    ofstream DataOut2((FilenameHeader+"MDSA-D-TargetsPerMin.txt").c_str(), ios::app);
     if (DataOut2.tellp()==0){
         for (size_t fpm : foodPerMinute){
             DataOut2 << fpm << ",";
