@@ -1,3 +1,3 @@
-# Distributed-Deterministic-Spiral-Search
+# Adaptive Multiple Distributed Spiral Search
 
 This is the development branch used and maintained by Ryan Luna.
