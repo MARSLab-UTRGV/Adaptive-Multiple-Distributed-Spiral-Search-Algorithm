@@ -91,6 +91,8 @@ class DSA_controller : public BaseController {
         size_t              collisionDelay;
 	    char 				direction_last;
 	    CVector2			nextSpiralPoint; //qilu 2/2023
+        
+        size_t targetsPerMin;
 
         /* movement functions */
         CDegrees angleInDegrees;
