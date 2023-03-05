@@ -84,6 +84,10 @@ class DSA_loop_functions : public argos::CLoopFunctions {
         
         argos::Real NestElevation;
         argos::Real SearchRadiusSquared;
+
+        string FilenameHeader;
+        Real CollisionTime;
+        vector<size_t> foodPerMinute;
 	
         /* list variables for food */
         std::vector<argos::CVector2> FoodList;

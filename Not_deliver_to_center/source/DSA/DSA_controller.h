@@ -92,7 +92,7 @@ class DSA_controller : public BaseController {
 	    char 				direction_last;
 	    CVector2			nextSpiralPoint; //qilu 2/2023
         
-        size_t targetsPerMin;
+        size_t num_targets_per_min;
 
         /* movement functions */
         CDegrees angleInDegrees;
@@ -103,8 +103,8 @@ class DSA_controller : public BaseController {
         bool TargetHit();
         void SetHoldingFood(); 
         
-	string results_path;
-	string results_full_path;
+        string results_path;
+        string results_full_path;
 		/* Pointer to the LEDs actuator */
         CCI_LEDsActuator* m_pcLEDs;
 };
