@@ -74,8 +74,6 @@ class DSA_controller : public BaseController {
 		CVector2            previous_target;
 		CVector2            newTarget;
         CVector3            startPosition;
-
-        size_t              num_targets_per_min;
         
         vector<char>        pattern;
         vector<CVector2>    spiral; //qilu 2/2023
@@ -92,6 +90,7 @@ class DSA_controller : public BaseController {
         size_t              collisionDelay;
 	    char 				direction_last;
 	    CVector2			nextSpiralPoint; //qilu 2/2023
+        size_t num_targets_per_min;
 
         /* movement functions */
         CDegrees angleInDegrees;

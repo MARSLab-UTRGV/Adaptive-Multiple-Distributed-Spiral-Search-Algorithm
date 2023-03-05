@@ -339,8 +339,14 @@ void DSA_controller::ControlStep()
 	    {	
         //argos::LOG << "Holding food and drop it" << std::endl;
         num_targets_collected++;
-        // num_targets_per_min++;
+        
         loopFunctions->setScore(num_targets_collected);
+		loopFunctions->currNumCollectedFood++;
+			//num_targets_per_min++;
+			//if (int(loopFunctions->getSimTimeInSeconds())%60 == 0){
+			//	loopFunctions->foodPerMinute.push_back(num_targets_per_min);
+			//	num_targets_per_min = 0;
+			//}
 	      
 			// This is only for the robot which was first assigned to a region  
 			if(firstAssigned && loopFunctions->shareAssignUpdated[RegionID] == false)
@@ -353,10 +359,13 @@ void DSA_controller::ControlStep()
 				reverse(tempPath.begin(), tempPath.end());
 				  
 				len = tempPath.size();
-				for(int i= len-1; i >= 0; i--) // remove visited points
-				{  
-					if(tempPath[i] != loopFunctions->currSpiralTarget[RegionID])
-					{
+				//LOG<<"Robot "<<RobotID<<", currSpiralTarget["<<RegionID<<"]="<< loopFunctions->currSpiralTarget[RegionID]<<endl;
+				if(loopFunctions->currSpiralTarget[RegionID] != CVector2(0,0))
+				{
+					for(int i= len-1; i >= 0; i--) // remove visited points
+					{  
+						if(tempPath[i] != loopFunctions->currSpiralTarget[RegionID])
+						{
                         tempPath.pop_back();
 					}
                     else
@@ -367,6 +376,7 @@ void DSA_controller::ControlStep()
 				}
                 robotSpiralPoints.clear();
                 robotSpiralPoints = tempPath;
+                }
 				tempPath.clear();    
 				loopFunctions->shareAssignUpdated[RegionID] = true;
 	        } //end if

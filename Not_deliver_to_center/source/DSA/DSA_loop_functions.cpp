@@ -3,6 +3,9 @@
 DSA_loop_functions::DSA_loop_functions() :
 	RNG(argos::CRandom::CreateRNG("argos")),
     //MaxSimTime(3600 * GetSimulator().GetPhysicsEngine("default").GetInverseSimulationClockTick()),
+        CollisionTime(0), 
+        lastNumCollectedFood(0),
+        currNumCollectedFood(0),
     ResourceDensityDelay(0),
     RandomSeed(GetSimulator().GetRandomSeed()),
     SimCounter(0),
@@ -33,8 +36,8 @@ DSA_loop_functions::DSA_loop_functions() :
     sim_time(0),
     score(0),
     PrintFinalScore(0),
-    FilenameHeader("/0"),
-    CollisionTime(0)
+    FilenameHeader("\0"),
+    scoreLastMinute(0)
 {}
 
 void DSA_loop_functions::Init(TConfigurationNode& node) {
@@ -49,7 +52,7 @@ void DSA_loop_functions::Init(TConfigurationNode& node) {
 	argos::GetNodeAttribute(DDSA_node, "RegionRadius",        RegionRadius);
 	argos::GetNodeAttribute(DDSA_node, "SearcherGap",         SearcherGap);
 	argos::GetNodeAttribute(DDSA_node, "NumOfRegions",        NumOfRegions);
-    argos::GetNodeAttribute(DDSA_node, "FilenameHeader",        FilenameHeader);
+    argos::GetNodeAttribute(DDSA_node, "FilenameHeader",      FilenameHeader);
    
 	NestRadiusSquared = NestRadius*NestRadius;
 	RegionRadiusSquared = RegionRadius*RegionRadius;
@@ -93,19 +96,36 @@ void DSA_loop_functions::calRegions()
 	
 	CVector2 location;
 	CVector2 pos;
+	vector<CVector2> tmpRegionCenters, tmpTopLeftPts, tmpBottomRightPts;
+	vector<pair<Real, int>> dist;
+	int count=0, idx;
 	for(int i =0; i < num_rows; i++)
 	{
 		for(int j =0; j < num_cols; j++)
 		{
 		location = CVector2(rangeMax-(2*i+1)*unit, rangeMax-(2*j+1)*unit);
-		regionCenters.push_back(location);
-		LOG << "region center["<<i<<","<<j<<"]="<<location<<endl;
+		dist.push_back(make_pair(location.SquareLength(), count));
+		count++;
+		
+		tmpRegionCenters.push_back(location);
+		//LOG << "region center["<<i<<","<<j<<"]="<<location<<endl;
 		pos = CVector2(location.GetX()+unit, location.GetY()+unit);
-		topLeftPts.push_back(pos);
+		tmpTopLeftPts.push_back(pos);
 		pos = CVector2(location.GetX()-unit, location.GetY()-unit);
-		bottomRightPts.push_back(pos);
+		tmpBottomRightPts.push_back(pos);
 		}
 	}
+	sort(dist.begin(), dist.end());
+	for(int i=0; i < dist.size(); i++)
+	{
+		idx = dist[i].second;
+		regionCenters.push_back(tmpRegionCenters[idx]);
+		topLeftPts.push_back(tmpTopLeftPts[idx]);
+		bottomRightPts.push_back(tmpBottomRightPts[idx]);
+		LOG << "New region center["<<i<<"]="<<tmpRegionCenters[idx]<<endl;
+		
+		}
+	
 	
 }
 
@@ -205,7 +225,7 @@ void DSA_loop_functions::generateSpiralPath()
             if(!canGenerateSpiralPoint(i_region, point)) break;
             
         } //end of generating a path
-      
+       //LOG<<"Generated all spiral paths ..."<<endl;
         spiralPoints.push_back(pointVector);
         pointVector.clear();   
         
@@ -299,11 +319,13 @@ void DSA_loop_functions::PostExperiment()
     ofstream DataOut((FilenameHeader+"MDSA-D-Data.txt").c_str(), ios::app);
     if (DataOut.tellp()==0){
 
-        DataOut << "Sim Time(s), Food Collected, Total Food in Simulation, Percentage of Total Collected, Collision Time in Seconds\n";
-        DataOut << getSimTimeInSeconds() << "," << (int)score << "," << (int)FoodItemCount << "," << 100*score/FoodItemCount << "," << CollisionTime/(2*ticks_per_second) << endl;
-
+        DataOut << "Sim Time(s), Collected, Total, Percentage, Collision Time(s)\n";
+        
     }
-
+    DataOut << getSimTimeInSeconds() << "," << (int)score << "," << (int)FoodItemCount << "," << 100*score/FoodItemCount << "," << CollisionTime/(2*ticks_per_second) << endl;
+		DataOut.close();
+	LOG << "Sim Time(s), Collected, Total, Percentage, Collision Time(s)\n";
+    LOG << getSimTimeInSeconds() << "," << (int)score << "," << (int)FoodItemCount << "," << 100*score/FoodItemCount << "%," << CollisionTime/(2*ticks_per_second) << endl;
     size_t tmp = 0;
 
     for (size_t fpm : foodPerMinute){
@@ -318,16 +340,38 @@ void DSA_loop_functions::PostExperiment()
     // the food collected in the remaining simulation time is discarded if the remaining simulation time < 60 seconds (1 minute)
     ofstream DataOut2((FilenameHeader+"MDSA-D-TargetsPerMin.txt").c_str(), ios::app);
     if (DataOut2.tellp()==0){
-        for (size_t fpm : foodPerMinute){
+		DataOut << "Collected per second\n";
+		}
+    for (size_t fpm : foodPerMinute){
             DataOut2 << fpm << ",";
-        }
-    }
+		}
+		DataOut2<<"\n";
+	DataOut2.close();
 }
 
 
 void DSA_loop_functions::PreStep() 
 {
     sim_time++;
+
+    // get num collected for for each minute
+    curr_time_in_minutes = getSimTimeInSeconds()/60.0;
+    if(curr_time_in_minutes - last_time_in_minutes==1){      
+        LOG << "Minute Passed... getSimTimeInSeconds: " << getSimTimeInSeconds() << ", Food Collected: " << currNumCollectedFood - lastNumCollectedFood << endl;
+        foodPerMinute.push_back(currNumCollectedFood - lastNumCollectedFood);
+        lastNumCollectedFood = currNumCollectedFood;
+        last_time_in_minutes++;
+	}
+        
+    
+    /*size_t FoodThisMinute;
+    if (int(getSimTimeInSeconds())%60 == 0 && sim_time % ticks_per_second == 0){
+        FoodThisMinute = score - scoreLastMinute;
+        scoreLastMinute = score;
+        foodPerMinute.push_back(FoodThisMinute);
+        LOG << "Minute Passed... getSimTimeInSeconds: " << getSimTimeInSeconds() << ", Food Collected: " << FoodThisMinute << endl;
+    }*/
+
     if(IdleCount >= NumOfRobots)
     {
       PostExperiment();
