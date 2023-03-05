@@ -50,14 +50,14 @@ void DSA_controller::Init(TConfigurationNode& node) {
     
      string ID = GetId();
     string ID_number;
-    LOG<<"Robot ID string= "<<ID<<endl;
+    //LOG<<"Robot ID string= "<<ID<<endl;
       
     for(size_t i=1; i< ID.size(); i++){
       ID_number += ID[i];
     }
     RobotID = stoi(ID_number);
  
-    LOG<<"RobotID number="<<RobotID<<endl;
+    //LOG<<"RobotID number="<<RobotID<<endl;
     //SetStartPosition(argos::CVector3(regionCenters[RobotID].GetX(), regionCenters[RobotID].GetY(), 0.0));
     TrailColor = CColor(std::rand()%100, std::rand()%150, std::rand()%200, 255); // we avoid the white or nearly white, so we do not mode the random number by 255 
 
@@ -253,9 +253,17 @@ void DSA_controller::CopyPatterntoTemp()
  *****/
 void DSA_controller::ControlStep() 
 {
+
+    // // Get num food collected each minute
+    // if (int(loopFunctions->getSimTimeInSeconds())%60 == 0){
+    //     LOG << "Minute Passed... SimTimeInSeconds:" << int(loopFunctions->getSimTimeInSeconds()) << ", Num Food Collected: " << num_targets_per_min << endl;
+    //     loopFunctions->foodPerMinute.push_back(num_targets_per_min++);
+    //     num_targets_per_min = 0;
+    // }
+
     if (DSA == START)
     {
-		LOG<<"Start ....."<< endl;
+		//LOG<<"Start ....."<< endl;
         firstAssigned = false;
         NumOfRegions = loopFunctions->spiralPoints.size();
 		if(GetSpiralPath())
@@ -265,10 +273,10 @@ void DSA_controller::ControlStep()
 		else
 		{
 			DSA = IDLE;
-			LOG<<"Robot"<< RobotID << " set to be idle ..."<<endl;
+			//LOG<<"Robot"<< RobotID << " set to be idle ..."<<endl;
 			SetTarget(loopFunctions->regionCenters[PreRegionID]);
 			loopFunctions->IdleCount++;
-			LOG<<"IdleCount = "<< loopFunctions->IdleCount<< endl;
+			//LOG<<"IdleCount = "<< loopFunctions->IdleCount<< endl;
 			
 		}
       
@@ -331,14 +339,8 @@ void DSA_controller::ControlStep()
 	    {	
         //argos::LOG << "Holding food and drop it" << std::endl;
         num_targets_collected++;
-        num_targets_per_min++;
+        // num_targets_per_min++;
         loopFunctions->setScore(num_targets_collected);
-        
-        // Get num food collected each minute
-        if (int(loopFunctions->getSimTimeInSeconds())%60 == 0){
-            loopFunctions->foodPerMinute.push_back(num_targets_per_min++);
-            num_targets_per_min = 0;
-        }
 	      
 			// This is only for the robot which was first assigned to a region  
 			if(firstAssigned && loopFunctions->shareAssignUpdated[RegionID] == false)

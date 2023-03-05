@@ -20,6 +20,7 @@ class DSA_loop_functions : public argos::CLoopFunctions {
 
 		void Init(TConfigurationNode& node);
 		void PreStep();
+        void PostStep();
 
 		void PostExperiment();
 
@@ -76,6 +77,7 @@ class DSA_loop_functions : public argos::CLoopFunctions {
 
         string FilenameHeader;
         Real CollisionTime;
+        size_t scoreLastMinute;
         vector<size_t> foodPerMinute;
         // size_t numCollisions;
 

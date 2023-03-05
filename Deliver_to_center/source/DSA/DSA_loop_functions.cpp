@@ -34,7 +34,8 @@ DSA_loop_functions::DSA_loop_functions() :
     score(0),
     PrintFinalScore(0),
     FilenameHeader("\0"),
-    CollisionTime(0)
+    CollisionTime(0),
+    scoreLastMinute(0)
 {}
 
 void DSA_loop_functions::Init(TConfigurationNode& node) {
@@ -99,7 +100,7 @@ void DSA_loop_functions::calRegions()
 		{
 		location = CVector2(rangeMax-(2*i+1)*unit, rangeMax-(2*j+1)*unit);
 		regionCenters.push_back(location);
-		LOG << "region center["<<i<<","<<j<<"]="<<location<<endl;
+		//LOG << "region center["<<i<<","<<j<<"]="<<location<<endl;
 		pos = CVector2(location.GetX()+unit, location.GetY()+unit);
 		topLeftPts.push_back(pos);
 		pos = CVector2(location.GetX()-unit, location.GetY()-unit);
@@ -295,7 +296,7 @@ void DSA_loop_functions::PostExperiment()
         CollisionTime += c2.GetCollisionTime();
     }
 
-    ofstream DataOut((FilenameHeader+"MDSA-D-Data.txt").c_str(), ios::app);
+    ofstream DataOut((FilenameHeader+"MDSA-C-Data.txt").c_str(), ios::app);
     if (DataOut.tellp()==0){
 
         DataOut << "Sim Time(s), Food Collected, Total Food in Simulation, Percentage of Total Collected, Collision Time in Seconds\n";
@@ -315,7 +316,7 @@ void DSA_loop_functions::PostExperiment()
     }
 
     // the food collected in the remaining simulation time is discarded if the remaining simulation time < 60 seconds (1 minute)
-    ofstream DataOut2((FilenameHeader+"MDSA-D-TargetsPerMin.txt").c_str(), ios::app);
+    ofstream DataOut2((FilenameHeader+"MDSA-C-TargetsPerMin.txt").c_str(), ios::app);
     if (DataOut2.tellp()==0){
         for (size_t fpm : foodPerMinute){
             DataOut2 << fpm << ",";
@@ -325,14 +326,28 @@ void DSA_loop_functions::PostExperiment()
 
 
 void DSA_loop_functions::PreStep() 
-{
+{   
     sim_time++;
+
+    // get num collected for for each minute
+    size_t FoodThisMinute;
+    // Real min = 60.0;
+    if (int(getSimTimeInSeconds())%60 == 0 && sim_time % ticks_per_second == 0){
+        FoodThisMinute = score - scoreLastMinute;
+        scoreLastMinute = score;
+        foodPerMinute.push_back(FoodThisMinute);
+        LOG << "Minute Passed... getSimTimeInSeconds: " << getSimTimeInSeconds() << ", Food Collected: " << FoodThisMinute << endl;
+    }
+
     if(IdleCount >= NumOfRobots)
     {
       PostExperiment();
 		exit(0); 
 	}
    
+}
+
+void DSA_loop_functions::PostStep(){
 }
 
 argos::Real DSA_loop_functions::getSimTimeInSeconds()
