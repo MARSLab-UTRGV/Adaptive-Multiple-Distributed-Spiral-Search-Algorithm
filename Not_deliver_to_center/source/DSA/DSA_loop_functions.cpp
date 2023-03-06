@@ -122,7 +122,7 @@ void DSA_loop_functions::calRegions()
 		regionCenters.push_back(tmpRegionCenters[idx]);
 		topLeftPts.push_back(tmpTopLeftPts[idx]);
 		bottomRightPts.push_back(tmpBottomRightPts[idx]);
-		LOG << "New region center["<<i<<"]="<<tmpRegionCenters[idx]<<endl;
+		//LOG << "New region center["<<i<<"]="<<tmpRegionCenters[idx]<<endl;
 		
 		}
 	
@@ -357,7 +357,7 @@ void DSA_loop_functions::PreStep()
     // get num collected for for each minute
     curr_time_in_minutes = getSimTimeInSeconds()/60.0;
     if(curr_time_in_minutes - last_time_in_minutes==1){      
-        LOG << "Minute Passed... getSimTimeInSeconds: " << getSimTimeInSeconds() << ", Food Collected: " << currNumCollectedFood - lastNumCollectedFood << endl;
+        //LOG << "Minute Passed... getSimTimeInSeconds: " << getSimTimeInSeconds() << ", Food Collected: " << currNumCollectedFood - lastNumCollectedFood << endl;
         foodPerMinute.push_back(currNumCollectedFood - lastNumCollectedFood);
         lastNumCollectedFood = currNumCollectedFood;
         last_time_in_minutes++;
