@@ -314,6 +314,9 @@ void DSA_loop_functions::PostExperiment()
         BaseController& c = dynamic_cast<BaseController&>(footBot.GetControllableEntity().GetController());
         DSA_controller& c2 = dynamic_cast<DSA_controller&>(c);
         CollisionTime += c2.GetCollisionTime();
+        for (CVector2 loc : c2.GetCollisionLocations()){
+            collisionLocations.push_back(loc);
+        }
     }
 
     ofstream DataOut((FilenameHeader+"MDSA-C-Data.txt").c_str(), ios::app);
@@ -347,6 +350,20 @@ void DSA_loop_functions::PostExperiment()
 		}
 		DataOut2<<"\n";
 	DataOut2.close();
+
+    /**
+     * Record the collision locations to file
+    */   
+    ofstream DataOut3((FilenameHeader+"MDSA-C-CollisionLocations.txt").c_str(), ios::app);
+    if (DataOut3.tellp()==0){
+		DataOut << "Collected per collision\n";
+	}
+
+    for (CVector2 coord : collisionLocations){
+        DataOut3 << coord.GetX() << " " << coord.GetY() << ',';
+	}
+	DataOut3<<"\n";
+	DataOut3.close();
 }
 
 
@@ -362,7 +379,6 @@ void DSA_loop_functions::PreStep()
         lastNumCollectedFood = currNumCollectedFood;
         last_time_in_minutes++;
 	}
-        
     
     /*size_t FoodThisMinute;
     if (int(getSimTimeInSeconds())%60 == 0 && sim_time % ticks_per_second == 0){

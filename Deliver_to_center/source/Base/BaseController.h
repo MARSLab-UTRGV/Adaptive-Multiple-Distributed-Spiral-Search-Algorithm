@@ -9,6 +9,7 @@
 #include <argos3/core/simulator/loop_functions.h>
 #include <cmath>
 #include <stack>
+// #include <vector>
 
 /**
  * BaseController
@@ -25,6 +26,7 @@ class BaseController : public argos::CCI_Controller {
         argos::CVector2 GetPosition();
         argos::CVector2 GetTarget();
   unsigned int GetCollisionTime();//qilu 02/2023
+  std::vector<argos::CVector2>GetCollisionLocations();
         void SetTarget(argos::CVector2 t);
         void SetStartPosition(argos::CVector3 sp);
         argos::CVector3 GetStartPosition();
@@ -75,6 +77,9 @@ class BaseController : public argos::CCI_Controller {
         argos::CCI_PositioningSensor* compassSensor;
         argos::CCI_DifferentialSteeringActuator* wheelActuator;
         argos::CCI_FootBotProximitySensor* proximitySensor;
+
+        std::vector<argos::CVector2> collisionLocationList;
+        bool collisionLocationRecorded;
 
         // controller state variables
         enum MovementState {

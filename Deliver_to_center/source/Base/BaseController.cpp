@@ -26,7 +26,8 @@ BaseController::BaseController() :
     PositionNoiseStdev(0),
 	collision_counter(0),
 	collisionDelay(0),
-	RNG(argos::CRandom::CreateRNG("argos"))
+	RNG(argos::CRandom::CreateRNG("argos")),
+    collisionLocationRecorded(false)
 {
     // calculate the forage range and compensate for the robot's radius of 0.085m
     //The proximity range is 10cm (or 0.1m) 
@@ -308,9 +309,15 @@ void BaseController::PopMovement() {
 
 }
 
+
+
 unsigned int BaseController::GetCollisionTime(){
  return collision_counter;
  }
+
+std::vector<CVector2> BaseController::GetCollisionLocations(){
+    return collisionLocationList;
+}
  
 bool BaseController::CollisionDetection() {
 
@@ -337,6 +344,18 @@ bool BaseController::CollisionDetection() {
 		}
 		Real randomNumber = RNG->Uniform(CRange<Real>(0.5, 1.0));
         collisionDelay = SimulationTick() + (size_t)(randomNumber*SimulationTicksPerSecond());//qilu 02/2023
+    }
+
+    /**
+     *  Get initial location of the collision 
+    */
+    if (isCollisionDetected && !collisionLocationRecorded){ // record the location if it hasn't been recorded for this collision
+        collisionLocationList.push_back(GetPosition());
+        // cout << "Pushed back collision location..." << endl;
+        collisionLocationRecorded = true;
+    }
+    else if (!isCollisionDetected){ // make sure the recorded bool is set to false between collisions
+        collisionLocationRecorded = false;
     }
 
     return isCollisionDetected;

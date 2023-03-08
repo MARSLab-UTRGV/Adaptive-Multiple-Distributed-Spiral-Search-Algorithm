@@ -81,6 +81,7 @@ class DSA_loop_functions : public argos::CLoopFunctions {
         // size_t numCollisions;
 			 Real curr_time_in_minutes; 
                 Real last_time_in_minutes; 
+        vector<CVector2> collisionLocations;
 
         /* physical robot & world variables */
         argos::Real FoodRadius;
