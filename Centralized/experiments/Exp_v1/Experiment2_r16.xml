@@ -7,7 +7,7 @@
   <!-- ************************* -->
   <framework>
     <system     threads="0" />
-    <experiment length="960"
+    <experiment length="1080"
                 ticks_per_second="32" /> <!-- the length is in seconds. The number of ticks is 32*length-->
                 
   </framework>
@@ -68,7 +68,8 @@
                   label   = "DSA_loop_functions">
 
 <!-- FoodBoundsWidth & FoodBoundsHeight can be removed. We can compute them #qilu 12/2022 -->
-    <DDSA PrintFinalScore = "1" FoodItemCount = "200" FoodDistribution = "2" NestRadius = "0.18" RegionRadius="0.15" SpiralGap = "0.18" NumOfRegions = 64 FilenameHeader = "results/Exp2_8x8_r32_rg64_f200_t16_"/>
+    <DDSA PrintFinalScore = "1" FoodItemCount = "128" FoodDistribution = "2" NestRadius = "0.18" RegionRadius="0.15" SpiralGap = "0.18" 
+    NumOfRegions = 16 FilenameHeader = "results/Exp2_8x8_r16_rg16_f128_t12_"/>
 
   </loop_functions>
         
@@ -83,9 +84,9 @@
       <position method="grid"
                 center="0.0, 0.0, 0.0"
                 distances="0.2, 0.2, 0.0"
-                layout="6, 6, 1" />
+                layout="4, 4, 1" />
       <orientation method="constant" values="0.0, 0.0, 0.0" />
-      <entity quantity="32" max_trials="100"> <!-- the "quantity" should be the same as "NumberOfRobots" above-->
+      <entity quantity="16" max_trials="100"> <!-- the "quantity" should be the same as "NumberOfRobots" above-->
         <foot-bot id="R">
           <controller config="DSA"/>
         </foot-bot>

@@ -14,7 +14,7 @@ DSA_controller::DSA_controller():
     m_pcLEDs(NULL),
     isHoldingFood(false),
     num_targets_per_min(0)
-	{}
+    {}
 
 /*****
  * Initialize the controller via the XML configuration file. ARGoS typically
@@ -89,7 +89,7 @@ void DSA_controller::Init(TConfigurationNode& node) {
 		       << "NumberOfSpirals, "
 		       << "TargetDistanceTolerance, "
 		       << "TargetAngleTolerance, "
-		       << "SearcherGap, "
+		       << "SpiralGap, "
 		       << "FoodDistanceTolerance, "
 		       << "RobotForwardSpeed, "
 		       << "RobotRotationSpeed, "
@@ -98,7 +98,7 @@ void DSA_controller::Init(TConfigurationNode& node) {
 		       << NumberOfSpirals << ", "
 		       << TargetDistanceTolerance << ", "
 		       << TargetAngleTolerance << ", "
-		       << SearcherGap << ", "
+		       << SpiralGap << ", "
 		       << FoodDistanceTolerance << ", "
 		       << RobotForwardSpeed << ", "
 		       << RobotRotationSpeed << ", "
@@ -128,39 +128,32 @@ bool DSA_controller::GetSpiralPath()
 	//int reg_idx = -1;
 	vector<CVector2> tempPath;
 	RegionID=-1;
-	
-	if(RobotID < NumOfRegions && loopFunctions->singleAssignFlag[RobotID] == false)
-	{
-		RegionID = RobotID;
-		getSpiralPath(RegionID);
-		firstAssigned = true;
-		loopFunctions->singleAssignFlag[RegionID] = true;
+	//LOG<< "1. Robot ID ="<<RobotID<<endl;
+
 		
-		return true;
-	}
-			
+	//LOG<<"Remove visited points"<<endl;	
 	//remove visited points 
 	for(int i=0; i < NumOfRegions; i++)
 	{
 		
-		if(i >= NumberOfRobots && loopFunctions->singleAssignFlag[i] == false) // if the number of regions is greater than the number of robots, the regions with larger IDs may not be assigned.
+		if(loopFunctions->singleAssignFlag[i] == false) // if the region was not assigned, assigned it.
 		{
 		RegionID = i;
-		getSpiralPath(RegionID);
+		getReversedSpiralPath(RegionID);
 		firstAssigned = true;
+		secondAssigned = false;
 		loopFunctions->singleAssignFlag[RegionID] = true;
-		
 		return true;
 		}
 	
         num_points = loopFunctions->spiralPoints[i].size();
         tempPath.clear();
-        
-        if(loopFunctions->currSpiralTarget[i] != CVector2(0, 0) && loopFunctions->shareFlag[i] == false) //The robot has reported its spiral target locaion at least once and the spiral path was not shared.
+        //The robot has reported its spiral target locaion at least once and the spiral path was not shared.
+        if(loopFunctions->firstSpiralTarget[i] != loopFunctions->regionCenters[RegionID] && loopFunctions->shareFlag[i] == false) 
         {
 			for(int j= num_points-1; j >= 0; j--)
 			{
-				if(loopFunctions->spiralPoints[i][j] != loopFunctions->currSpiralTarget[i])
+				if(loopFunctions->spiralPoints[i][j] != loopFunctions->firstSpiralTarget[i])
 				{
 				tempPath.push_back(loopFunctions->spiralPoints[i][j]);
 				}
@@ -174,12 +167,14 @@ bool DSA_controller::GetSpiralPath()
 			loopFunctions->spiralPoints[i].clear();
 			loopFunctions->spiralPoints[i] = tempPath;
 			tempPath.clear();
-			
 		}
 	} //end for loop for removing visited points
 		
 	for(int i=0; i < loopFunctions->shareFlag.size(); i++)
 	{
+		//LOG<<"shareFlag["<< i<<"]=" <<loopFunctions->shareFlag[i]<<endl;
+		//LOG<<"spiralPoints["<< i << "].size()=" << loopFunctions->spiralPoints[i].size()<<endl;
+		
 		if (loopFunctions->shareFlag[i] == false && loopFunctions->spiralPoints[i].size() > 3) // the spiral path was not shared
 		{	
 			RegionID = i;
@@ -206,36 +201,28 @@ bool DSA_controller::GetSpiralPath()
 	//LOG <<"region id = "<<RegionID<<endl;
 	if(RegionID == -1) //does not have paths for sharing
 	{
-        LOG<<"2. Robot "<<RobotID<< " goes to idle ..."<<endl;
+        //LOG<<"2. Robot "<<RobotID<< " goes to idle ..."<<endl;
 		return false;
-		}
+	}
 	
 	//LOG<<"longest spiralPoints[" <<RegionID<<"] size="<<loopFunctions->spiralPoints[RegionID].size()<<endl;
 			
+	//split the remaining spiral path into two
+	//LOG<<"region id= "<<RegionID<< ", midIdx="<<midIdx<< ", num_points="<< num_points <<endl;
+	//LOG<<"4. Robot ID="<<RobotID<< ", RegionID="<< RegionID <<endl;
+	robotSpiralPoints.clear();
+	robotSpiralPoints = loopFunctions->spiralPoints[RegionID];
+	//reverse(robotSpiralPoints.begin(), robotSpiralPoints.end());
+	firstAssigned = false;
+		secondAssigned = true;
+	loopFunctions->shareFlag[RegionID] = true;
+	loopFunctions->shareAssignUpdated[RegionID] = false;
+	return true;
 	
-		midIdx = round(loopFunctions->spiralPoints[RegionID].size()/2);
-		
-		//split the remaining spiral path into two
-		
-		num_points = loopFunctions->spiralPoints[RegionID].size();
-		//LOG<<"region id= "<<RegionID<< ", midIdx="<<midIdx<< ", num_points="<< num_points <<endl;
-		//LOG<<"4. Robot ID="<<RobotID<<endl;
-        robotSpiralPoints.clear();
-		for(int i= num_points - 1; i >= midIdx; i--)
-		{
-			robotSpiralPoints.push_back(loopFunctions->spiralPoints[RegionID][i]);
-			loopFunctions->spiralPoints[RegionID].pop_back();	
-		}
-		//reverse(robotSpiralPoints.begin(), robotSpiralPoints.end());
-			
-		loopFunctions->shareFlag[RegionID] = true;
-		loopFunctions->shareAssignUpdated[RegionID] = false;
-		return true;
-        
 		
 }
 
-void DSA_controller::getSpiralPath(size_t regID)
+void DSA_controller::getReversedSpiralPath(size_t regID)
 {
 	robotSpiralPoints = loopFunctions->spiralPoints[regID]; //it makes a copy. It does not make a pointer for the same memory
     reverse(robotSpiralPoints.begin(), robotSpiralPoints.end());
@@ -254,21 +241,19 @@ void DSA_controller::CopyPatterntoTemp()
 void DSA_controller::ControlStep() 
 {
 
-    // // Get num food collected each minute
-    // if (int(loopFunctions->getSimTimeInSeconds())%60 == 0){
-    //     LOG << "Minute Passed... SimTimeInSeconds:" << int(loopFunctions->getSimTimeInSeconds()) << ", Num Food Collected: " << num_targets_per_min << endl;
-    //     loopFunctions->foodPerMinute.push_back(num_targets_per_min++);
-    //     num_targets_per_min = 0;
-    // }
-
     if (DSA == START)
     {
 		//LOG<<"Start ....."<< endl;
         firstAssigned = false;
+        secondAssigned = false;
         NumOfRegions = loopFunctions->spiralPoints.size();
+        //LOG<<"START: Current target "<< GetTarget()<<endl;
+        
 		if(GetSpiralPath())
 		{
+			//LOG<<"Get spiral sucessfully"<<endl;
 		    DSA = SEARCHING;
+		    Stop(); //stop to reach the initial target location and start on the spiral path
 		}
 		else
 		{
@@ -324,8 +309,10 @@ void DSA_controller::ControlStep()
 	  } 
       else // not holding food
 	  {
+		  //LOG<<"ReachSpiralTargets: Current target "<< GetTarget()<<endl;
 	    ReachSpiralTargets(); /* Initializes targets positions. */
-        //LOG<<"ReachSpiralTargets ***"<<endl;
+        //LOG<<"ReachSpiralTargets?***"<<endl;
+        
 	  }
   } 
   else if( DSA == RETURN_TO_CENTER) 
@@ -347,39 +334,7 @@ void DSA_controller::ControlStep()
 			//	loopFunctions->foodPerMinute.push_back(num_targets_per_min);
 			//	num_targets_per_min = 0;
 			//}
-	      
-			// This is only for the robot which was first assigned to a region  
-			if(firstAssigned && loopFunctions->shareAssignUpdated[RegionID] == false)
-			{    
-              // if the region is shared with another robot, then split the spiral path
-		        vector<CVector2> tempPath;
-				int len;
-                      
-                tempPath = loopFunctions->spiralPoints[RegionID];
-				reverse(tempPath.begin(), tempPath.end());
-				  
-				len = tempPath.size();
-				//LOG<<"Robot "<<RobotID<<", currSpiralTarget["<<RegionID<<"]="<< loopFunctions->currSpiralTarget[RegionID]<<endl;
-				if(loopFunctions->currSpiralTarget[RegionID] != CVector2(0,0))
-				{
-					for(int i= len-1; i >= 0; i--) // remove visited points
-					{  
-						if(tempPath[i] != loopFunctions->currSpiralTarget[RegionID])
-						{
-                        tempPath.pop_back();
-					}
-                    else
-                    {
-                       tempPath.pop_back();
-                        break;
-                    }
-				}
-                robotSpiralPoints.clear();
-                robotSpiralPoints = tempPath;
-                }
-				tempPath.clear();    
-				loopFunctions->shareAssignUpdated[RegionID] = true;
-	        } //end if
+			
 	      
 			DSA = RETURN_TO_SEARCH;
 			SetIsHeadingToNest(false);
@@ -435,24 +390,62 @@ void DSA_controller::ControlStep()
 
    /* If the robot hit target and the patter size >0
        then find the next direction. */
- 
+    //LOG<<"Robot " << RobotID<< ", firstAssigned="<< firstAssigned<< ", secondAssigned=" << secondAssigned<< endl;
     if(TargetHit() && robotSpiralPoints.size() > 0) {
       /* Finds the last direction of the spiral. */
         nextSpiralPoint = robotSpiralPoints[robotSpiralPoints.size() - 1]; 
         SetIsHeadingToNest(false);
-        SetTarget(nextSpiralPoint);
-        if(firstAssigned){
-        loopFunctions->currSpiralTarget[RegionID] = nextSpiralPoint; //report the current spiral target location. Then, it can be used for spliting the path
-	    }
-	    robotSpiralPoints.pop_back();
+        
+        if(firstAssigned)
+        {
+			//LOG<<"Robot " << RobotID<< ", firstAssigned="<< firstAssigned<< endl;
+			//LOG<< "secondSpiralTarget[" << RegionID << "]=" << loopFunctions->secondSpiralTarget[RegionID]<<endl;
+			//LOG<< "nextSpiralPoint= "<< nextSpiralPoint<<endl;
+			if(loopFunctions->secondSpiralTarget[RegionID] == nextSpiralPoint)
+			{
+				PreRegionID = RegionID;
+		        SetTarget(nextSpiralPoint);
+    	        robotSpiralPoints.clear();
+    	        //LOG<<"Robot " << RobotID<< " is the first, it will meet the second robot. So, go to the center" << endl; 
+			}
+			else
+			{
+				loopFunctions->firstSpiralTarget[RegionID] = nextSpiralPoint; //report the current spiral target location. Then, it can be used for sharing the path
+				SetTarget(nextSpiralPoint);
+				robotSpiralPoints.pop_back();
+				//LOG<<"Robot " << RobotID<< ", update firstSpiralTarget to "<< nextSpiralPoint<<endl;
+				//LOG<<"firstSpiralTarget[" << RegionID<< "] ="<<loopFunctions->firstSpiralTarget[RegionID]<<endl; 
+			}
+        }
+	    else if(secondAssigned)
+	    {
+			//LOG<<"Robot " << RobotID<< ", secondAssigned=true"<<endl;
+			//LOG<< "firstSpiralTarget[" << RegionID << "]=" << loopFunctions->firstSpiralTarget[RegionID]<<endl;
+			//LOG<< "nextSpiralPoint= "<< nextSpiralPoint<<endl;
+			if(loopFunctions->firstSpiralTarget[RegionID] == nextSpiralPoint)
+			{
+				PreRegionID = RegionID;
+		        SetTarget(nextSpiralPoint - CVector2(0.3, 0.3));//can not set it to (0,0) since the TargetHit will avoid to go to the center.
+    	        robotSpiralPoints.clear();
+    	        
+    	       // LOG<<"Robot " << RobotID<< " is the second, it will meet the first robot. So, go to the center" << endl;
+			}
+			else
+			{
+				loopFunctions->secondSpiralTarget[RegionID] = nextSpiralPoint; //report the current spiral target location.
+				SetTarget(nextSpiralPoint);
+				robotSpiralPoints.pop_back();
+				//LOG<<"Robot " << RobotID<< ", update secondSpiralTarget to "<< nextSpiralPoint<<endl;
+				//LOG<< "secondSpiralTarget[" << RegionID<< "]=" <<loopFunctions->secondSpiralTarget[RegionID]<<endl;
+			}
+		}
     }
     else if(TargetHit() && robotSpiralPoints.size() == 0) 
     {
         //LOG<<"Robot "<< RobotID<< " completed the spiral search ***"<<endl;
         PreRegionID = RegionID;
 		DSA = START;
-		SetIsHeadingToNest(false);
-    	SetTarget(CVector2(0, 0));
+    	SetTarget(CVector2(0.1, 0.1)); //can not set it to (0,0) since the TargetHit will avoid to go to the center.
       }
 }
 
@@ -465,7 +458,8 @@ void DSA_controller::ControlStep()
     CVector2 position = GetPosition() - GetTarget();
     bool hit = false;
      
-    if(GetTarget() == loopFunctions->NestPosition && IsInTheNest())
+   // if(GetTarget() == loopFunctions->NestPosition && IsInTheNest())
+    if(GetTarget() == loopFunctions->NestPosition)
     {
 		hit = true;
 		}

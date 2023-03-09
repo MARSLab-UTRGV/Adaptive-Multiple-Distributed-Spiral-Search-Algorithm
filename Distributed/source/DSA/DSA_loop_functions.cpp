@@ -50,7 +50,7 @@ void DSA_loop_functions::Init(TConfigurationNode& node) {
 	argos::GetNodeAttribute(DDSA_node, "FoodItemCount",       FoodItemCount);
 	argos::GetNodeAttribute(DDSA_node, "NestRadius",          NestRadius);
 	argos::GetNodeAttribute(DDSA_node, "RegionRadius",        RegionRadius);
-	argos::GetNodeAttribute(DDSA_node, "SearcherGap",         SearcherGap);
+	argos::GetNodeAttribute(DDSA_node, "SpiralGap",         SpiralGap);
 	argos::GetNodeAttribute(DDSA_node, "NumOfRegions",        NumOfRegions);
     argos::GetNodeAttribute(DDSA_node, "FilenameHeader",      FilenameHeader);
    
@@ -61,8 +61,8 @@ void DSA_loop_functions::Init(TConfigurationNode& node) {
 	//The proximity range is 10cm (or 0.1m) qilu 12/2022 
 	
     argos::CVector3 ArenaSize = GetSpace().GetArenaSize();
-    argos::Real rangeX = ArenaSize.GetX() / 2.0;
-	argos::Real rangeY = ArenaSize.GetY() / 2.0;
+    argos::Real rangeX = ArenaSize.GetX() / 2.0 - 0.185;
+	argos::Real rangeY = ArenaSize.GetY() / 2.0 - 0.185;
 	
     ForageRangeX.Set(-rangeX, rangeX);
     ForageRangeY.Set(-rangeY, rangeY);
@@ -82,6 +82,7 @@ void DSA_loop_functions::Init(TConfigurationNode& node) {
 	NumOfRobots = footbots.size();
     calRegions();
     generateSpiralPath();
+    last_time_in_minutes=0;
 	
 }
 
@@ -148,7 +149,7 @@ void DSA_loop_functions::generateSpiralPath()
            
 			while(n_steps_north >= 3) //create a point in every 3 searchGap
 			{	
-				x = point.GetX() + 3*SearcherGap;
+				x = point.GetX() + 3*SpiralGap;
 				y = point.GetY();
 				point = CVector2(x, y);
 				pointVector.push_back(point);
@@ -156,7 +157,7 @@ void DSA_loop_functions::generateSpiralPath()
 			}
 			if(n_steps_north > 0)
 			{
-				x = point.GetX() + n_steps_north*SearcherGap;
+				x = point.GetX() + n_steps_north*SpiralGap;
 				y = point.GetY();
 				point = CVector2(x, y);
 				pointVector.push_back(point);
@@ -169,7 +170,7 @@ void DSA_loop_functions::generateSpiralPath()
             while(n_steps_east >= 3)
 			{	
 				x = point.GetX();
-				y = point.GetY() - 3*SearcherGap;
+				y = point.GetY() - 3*SpiralGap;
 				point = CVector2(x, y);
 				pointVector.push_back(point);
 				n_steps_east -= 3;
@@ -177,7 +178,7 @@ void DSA_loop_functions::generateSpiralPath()
 			if(n_steps_east > 0)
 			{
 				x = point.GetX();
-				y = point.GetY() - n_steps_east*SearcherGap;
+				y = point.GetY() - n_steps_east*SpiralGap;
 				point = CVector2(x, y);
 				pointVector.push_back(point);
 			} 
@@ -188,7 +189,7 @@ void DSA_loop_functions::generateSpiralPath()
             
             while(n_steps_south >= 3)
 			{	
-				x = point.GetX() - 3*SearcherGap;
+				x = point.GetX() - 3*SpiralGap;
 				y = point.GetY();
 				point = CVector2(x, y);
 				pointVector.push_back(point);
@@ -196,7 +197,7 @@ void DSA_loop_functions::generateSpiralPath()
 			}
 			if(n_steps_south > 0)
 			{
-				x = point.GetX() - n_steps_south*SearcherGap;
+				x = point.GetX() - n_steps_south*SpiralGap;
 				y = point.GetY();
 				point = CVector2(x, y);
 				pointVector.push_back(point);
@@ -210,7 +211,7 @@ void DSA_loop_functions::generateSpiralPath()
             while(n_steps_west >= 3)
 			{	
 				x = point.GetX();
-				y = point.GetY() + 3*SearcherGap;
+				y = point.GetY() + 3*SpiralGap;
 				point = CVector2(x, y);
 				pointVector.push_back(point);
 				n_steps_west -= 3;
@@ -218,7 +219,7 @@ void DSA_loop_functions::generateSpiralPath()
 			if(n_steps_west > 0)
 			{
 				x = point.GetX();
-				y = point.GetY() + n_steps_west*SearcherGap;
+				y = point.GetY() + n_steps_west*SpiralGap;
 				point = CVector2(x, y);
 				pointVector.push_back(point);
 			} 
@@ -232,7 +233,8 @@ void DSA_loop_functions::generateSpiralPath()
         shareFlag.push_back(false);
         shareAssignUpdated.push_back(true); //do not allow updates at the beginning
         singleAssignFlag.push_back(false);
-        currSpiralTarget.push_back(CVector2(0, 0));
+        firstSpiralTarget.push_back(CVector2(0, 0));
+        secondSpiralTarget.push_back(CVector2(0, 0));
     }
     /*for(int i=0; i< spiralPoints.size(); i++)
     {
@@ -245,8 +247,9 @@ void DSA_loop_functions::generateSpiralPath()
 
 bool DSA_loop_functions::canGenerateSpiralPoint(int idx_region, CVector2 point)
 {
-    if((point.GetX()> topLeftPts[idx_region].GetX() && point.GetY() > topLeftPts[idx_region].GetY()) || (point.GetX()< bottomRightPts[idx_region].GetX() && point.GetY() < bottomRightPts[idx_region].GetY()) )
-        return false;
+    //if((point.GetX()> topLeftPts[idx_region].GetX() && point.GetY() > topLeftPts[idx_region].GetY()) || (point.GetX()< bottomRightPts[idx_region].GetX() && point.GetY() < bottomRightPts[idx_region].GetY()) )
+    if(point.GetX()> topLeftPts[idx_region].GetX() || point.GetY() > topLeftPts[idx_region].GetY() )
+          return false;
     else return true;
 }
     
@@ -316,16 +319,16 @@ void DSA_loop_functions::PostExperiment()
         CollisionTime += c2.GetCollisionTime();
     }
 
-    ofstream DataOut((FilenameHeader+"MDSA-D-Data.txt").c_str(), ios::app);
+    ofstream DataOut((FilenameHeader+"MDBSA-D-Data.txt").c_str(), ios::app);
     if (DataOut.tellp()==0){
 
-        DataOut << "Sim Time(s), Collected, Total, Percentage, Collision Time(s)\n";
+        DataOut << "SimT(s), Bots, Collected, Total, Collision Time(s), Percentage\n";
         
     }
-    DataOut << getSimTimeInSeconds() << "," << (int)score << "," << (int)FoodItemCount << "," << 100*score/FoodItemCount << "," << CollisionTime/(2*ticks_per_second) << endl;
+    DataOut << getSimTimeInSeconds() << ",   	" << (int)NumOfRobots <<",  "<< (int)score << ",	" << (int)FoodItemCount  << ",	" << CollisionTime/(2*ticks_per_second) << ",	" << 100*score/FoodItemCount << endl;
 		DataOut.close();
-	LOG << "Sim Time(s), Collected, Total, Percentage, Collision Time(s)\n";
-    LOG << getSimTimeInSeconds() << "," << (int)score << "," << (int)FoodItemCount << "," << 100*score/FoodItemCount << "%," << CollisionTime/(2*ticks_per_second) << endl;
+	LOG << "Sim Time(s), Bots, Collected, Total, Collision Time(s), Percentage\n";
+    LOG << getSimTimeInSeconds() << ",   " << (int)NumOfRobots << ",  " << (int)score << ",		" << (int)FoodItemCount << ",		"  << CollisionTime/(2*ticks_per_second)<< ",	" << 100*score/FoodItemCount << "%" << endl;
     size_t tmp = 0;
 
     for (size_t fpm : foodPerMinute){
@@ -338,7 +341,7 @@ void DSA_loop_functions::PostExperiment()
     }
 
     // the food collected in the remaining simulation time is discarded if the remaining simulation time < 60 seconds (1 minute)
-    ofstream DataOut2((FilenameHeader+"MDSA-D-TargetsPerMin.txt").c_str(), ios::app);
+    ofstream DataOut2((FilenameHeader+"MDBSA-D-TargetsPerMin.txt").c_str(), ios::app);
     if (DataOut2.tellp()==0){
 		DataOut << "Collected per second\n";
 		}
@@ -357,7 +360,7 @@ void DSA_loop_functions::PreStep()
     // get num collected for for each minute
     curr_time_in_minutes = getSimTimeInSeconds()/60.0;
     if(curr_time_in_minutes - last_time_in_minutes==1){      
-        //LOG << "Minute Passed... getSimTimeInSeconds: " << getSimTimeInSeconds() << ", Food Collected: " << currNumCollectedFood - lastNumCollectedFood << endl;
+        LOG << "Minute Passed... getSimTimeInSeconds: " << getSimTimeInSeconds() << ", Food Collected: " << currNumCollectedFood - lastNumCollectedFood << endl;
         foodPerMinute.push_back(currNumCollectedFood - lastNumCollectedFood);
         lastNumCollectedFood = currNumCollectedFood;
         last_time_in_minutes++;
@@ -372,11 +375,11 @@ void DSA_loop_functions::PreStep()
         LOG << "Minute Passed... getSimTimeInSeconds: " << getSimTimeInSeconds() << ", Food Collected: " << FoodThisMinute << endl;
     }*/
 
-    if(IdleCount >= NumOfRobots)
-    {
-      PostExperiment();
-		exit(0); 
-	}
+    //if(IdleCount >= NumOfRobots)
+    //{
+     // PostExperiment();
+	//	exit(0); 
+	//}
    
 }
 

@@ -37,11 +37,13 @@ class DSA_loop_functions : public argos::CLoopFunctions {
         size_t NumOfRegions;
         int IdleCount;
         vector<vector<CVector2>> spiralPoints; //qilu 02/2023	
+        //vector<vector<CVector2>> reversedSpiralPoints;
         CVector2 targetSpiralLocation;
         vector<bool> shareFlag; //check whether the spiral is shared 
         vector<bool> shareAssignUpdated;
         vector<bool> singleAssignFlag;
-        vector<CVector2> currSpiralTarget;
+        vector<CVector2> firstSpiralTarget;
+        vector<CVector2> secondSpiralTarget;
 
 	argos::Real getSimTimeInSeconds();
 
@@ -131,7 +133,7 @@ class DSA_loop_functions : public argos::CLoopFunctions {
         vector<CVector2>    bottomRightPts; //qilu 2/2023
         size_t NumberOfSpirals;
        //size_t	RobotID; // start from 0 qilu 12/2022
-         Real                SearcherGap;
+         Real                SpiralGap;
         
 };
 

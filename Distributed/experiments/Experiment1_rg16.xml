@@ -7,7 +7,7 @@
   <!-- ************************* -->
   <framework>
     <system     threads="0" />
-    <experiment length="1080"
+    <experiment length="720"
                 ticks_per_second="32" /> <!-- the length is in seconds. The number of ticks is 32*length-->
                 
   </framework>
@@ -68,8 +68,8 @@
                   label   = "DSA_loop_functions">
 
 <!-- FoodBoundsWidth & FoodBoundsHeight can be removed. We can compute them #qilu 12/2022 -->
-    <DDSA PrintFinalScore = "1" FoodItemCount = "128" FoodDistribution = "2" NestRadius = "0.15" RegionRadius="0.12" SearcherGap = "0.18" 
-    NumOfRegions = 16 FilenameHeader = "results/Exp1_8x8_r8_rg16_f128_t12_"/>
+    <DDSA PrintFinalScore = "1" FoodItemCount = "160" FoodDistribution = "2" NestRadius = "0.18" RegionRadius="0.15" SpiralGap = "0.18" 
+    NumOfRegions = 16 FilenameHeader = "results/Exp1_8x8_r8_rg16_f160_t12_"/>
 
   </loop_functions>
         

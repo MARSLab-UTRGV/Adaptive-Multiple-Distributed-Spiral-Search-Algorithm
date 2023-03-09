@@ -28,7 +28,7 @@ class DSA_controller : public BaseController {
 
         bool   IsHoldingFood();
         bool   IsInTheNest(); //qilu 02/2023
-        void   getSpiralPath(size_t regID);
+        void   getReversedSpiralPath(size_t regID);
         bool   GetSpiralPath();
         int    calcDistanceToTravel(int ith_robot, int i_circuit, int N_robots, char direction);
         void   calRegions(); //qilu 12/2022
@@ -48,6 +48,7 @@ class DSA_controller : public BaseController {
 		size_t  RegionID;
 		size_t  PreRegionID;
 		bool    firstAssigned;
+		bool    secondAssigned;
 
         size_t NumberOfRobots;
         size_t NumberOfSpirals;
@@ -67,7 +68,7 @@ class DSA_controller : public BaseController {
         CColor              TrailColor;
 
 		Real                ProbTargetDetection;
-        Real                SearcherGap;
+        Real                SpiralGap;
         Real                FoodDistanceTolerance;
         Real                SquaredFoodDistanceTolerance;
        	CVector2            previous_position;
