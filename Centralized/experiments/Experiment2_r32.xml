@@ -35,12 +35,12 @@
 
         <footbot_motor_ground implementation = "rot_z_only"/>
 	
-<!--
+    <!--
 	<differential_steering implementation="default"
                                          vel_noise_range="-100.0:100.0"
                                          dist_noise_range="-100.0:100.0" 
 					 />
--->
+    -->
       </sensors>
 
       <params>
