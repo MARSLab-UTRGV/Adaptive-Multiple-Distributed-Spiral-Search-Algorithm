@@ -109,11 +109,14 @@ void DSA_loop_functions::calRegions()
 		count++;
 		
 		tmpRegionCenters.push_back(location);
+		//regionCenters.push_back(location);
 		//LOG << "region center["<<i<<","<<j<<"]="<<location<<endl;
 		pos = CVector2(location.GetX()+unit, location.GetY()+unit);
 		tmpTopLeftPts.push_back(pos);
+		//topLeftPts.push_back(pos);
 		pos = CVector2(location.GetX()-unit, location.GetY()-unit);
 		tmpBottomRightPts.push_back(pos);
+		//bottomRightPts.push_back(pos);
 		}
 	}
 	sort(dist.begin(), dist.end());

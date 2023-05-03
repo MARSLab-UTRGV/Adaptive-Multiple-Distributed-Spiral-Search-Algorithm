@@ -31,11 +31,10 @@ def Experiment2(rc):
 
     
     xml_r8 = './experiments/Experiment2_r8.xml'
-    #xml_r16 = './experiments/Experiment2_r16.xml'
     xml_r14 = './experiments/Experiment2_r14.xml'
     xml_20 = './experiments/Experiment2_r20.xml'
     xml_r26 = './experiments/Experiment2_r26.xml'
-	xml_r32 = './experiments/Experiment2_r32.xml'
+    xml_r32 = './experiments/Experiment2_r32.xml'
     
     run_count = rc
     
@@ -64,6 +63,43 @@ def Experiment2(rc):
         print(f'MDSA-Distributed Experiment 2: 32 robots,  Iteration: {j+1}/{run_count}\n')
         os.system(f'argos3 -c {xml_r32}')
 
+def Experiment3(rc):
+
+    
+    xml_f100 = './experiments/Experiment3_food100.xml'
+    xml_f150 = './experiments/Experiment3_food150.xml'
+    xml_f200 = './experiments/Experiment3_food200.xml'
+    xml_f250 = './experiments/Experiment3_food250.xml'
+    xml_f300 = './experiments/Experiment3_food300.xml'
+    
+    run_count = rc
+    
+    for j in range(run_count):
+        time.sleep(0.05)
+        print(f'MDSA-Distributed Experiment 3: 100 food,  Iteration: {j+1}/{run_count}\n')
+        os.system(f'argos3 -c {xml_f100}')
+    
+    for j in range(run_count):
+        time.sleep(0.05)
+        print(f'MDSA-Distributed Experiment 3: 150 food,  Iteration: {j+1}/{run_count}\n')
+        os.system(f'argos3 -c {xml_f150}')
+
+    for j in range(run_count):
+        time.sleep(0.05)
+        print(f'MDSA-Distributed Experiment 3: 200 food,  Iteration: {j+1}/{run_count}\n')
+        os.system(f'argos3 -c {xml_f200}')
+    
+    for j in range(run_count):
+        time.sleep(0.05)
+        print(f'MDSA-Distributed Experiment 3: 250 food,  Iteration: {j+1}/{run_count}\n')
+        os.system(f'argos3 -c {xml_f250}')
+
+    for j in range(run_count):
+        time.sleep(0.05)
+        print(f'MDSA-Distributed Experiment 3: 300 food,  Iteration: {j+1}/{run_count}\n')
+        os.system(f'argos3 -c {xml_f300}')
+
+
 
 if __name__ == '__main__':
 
@@ -75,3 +111,4 @@ if __name__ == '__main__':
 
     Experiment1(rc)
     Experiment2(rc)
+    Experiment3(rc)

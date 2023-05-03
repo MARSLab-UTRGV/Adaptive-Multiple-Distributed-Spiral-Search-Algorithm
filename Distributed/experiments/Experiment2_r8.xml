@@ -68,7 +68,7 @@
                   label   = "DSA_loop_functions">
 
 <!-- FoodBoundsWidth & FoodBoundsHeight can be removed. We can compute them #qilu 12/2022 -->
-    <DDSA PrintFinalScore = "1" FoodItemCount = "200" FoodDistribution = "2" NestRadius = "0.18" RegionRadius="0.15" SpiralGap = "0.18" NumOfRegions = 64 FilenameHeader = "results/Exp2_8x8_r8_rg64_f200_t16_"/>
+    <DDSA PrintFinalScore = "1" FoodItemCount = "200" FoodDistribution = "2" NestRadius = "0.18" RegionRadius="0.15" SpiralGap = "0.18" NumOfRegions = "16" FilenameHeader = "results/Exp2_8x8_r8_rg16_f200_t16_"/>
 
   </loop_functions>
         
